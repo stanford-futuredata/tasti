@@ -29,9 +29,9 @@ class Video(torch.utils.data.Dataset):
             
     def transform(self, frame):
         frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-#         xmin, xmax, ymin, ymax = 0, 1750, 540, 1080
-#         frame = frame[ymin:ymax, xmin:xmax]
-#         frame = cv2.resize(frame, (224, 224))
+        xmin, xmax, ymin, ymax = 0, 1750, 540, 1080
+        frame = frame[ymin:ymax, xmin:xmax]
+        frame = cv2.resize(frame, (224, 224))
         frame = transforms.functional.to_tensor(frame)
         return frame
 

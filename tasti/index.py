@@ -1,6 +1,41 @@
 import torch
 import tasti
+import numpy as np
 from tqdm.autonotebook import tqdm
+
+class TargetDNNCache:
+    def __init__(self, target_dnn, dataset, length):
+        self.target_dnn = target_dnn
+        self.dataset = dataset
+        self.length = length
+        self.cache = [None for i in range(self.length)]
+        
+    def __getitem__(self, idx):
+        if self.cache[idx] == None:
+            data = self.dataset[idx]
+            out = self.target_dnn(data)
+            self.cache[idx] = out
+        return self.cache[idx]
+    
+class TargetDNNCacheArray(np.ndarray):
+    def __new__(cls, target_dnn_cache, scoring_fn):
+        self.target_dnn_cache = target_dnn_cache
+        self.length = self.target_dnn_cache.length
+        self.scoring_fn = scoring_fn
+        arr = np.full(self.length, -1)
+        obj = np.asarray(arr).view(cls)
+        return obj
+    
+    def __getitem__(self, item):
+        res = self.target_dnn_cache[item]
+        outs = []
+        if isinstance(item, (slice, int)):
+            for thing in res:
+                outs.append(self.scoring_fn(thing))
+        else:
+            outs = self.scoring_fn(res)
+        super()[res] = outs
+        return super().__getitem__(item)
 
 class Index:
     def __init__(self, config):
