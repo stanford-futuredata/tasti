@@ -62,6 +62,19 @@ class Index:
     def embedding_dnn_post_processing(self, embedding_dnn_output):
         return embedding_dnn_output
     
+    def get_triplet_dataset(self):
+        model = self.get_target_dnn()
+        target_dnn_dataset = self.get_target_dnn_dataset()
+        labels = []
+        for idx in tqdm(self.training_idxs):
+            out = model(dataset[idx])
+            labels.append(out)
+        del target_dnn_dataset
+        
+        embedding_dnn_dataset = self.get_embedding_dnn_dataset()
+
+        
+    
     def do_mining(self):
         if self.config.do_mining:
             model = self.get_embedding_dnn()
