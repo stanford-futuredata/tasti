@@ -36,7 +36,8 @@ def get_and_update_dists(x, embeddings, min_dists):
 class FPFBucketter(Bucketter):
     def bucket(
             self,
-            embeddings: np.ndarray
+            embeddings: np.ndarray,
+            max_k: int
     ):
         reps = np.full(self.nb_buckets, -1)
         reps[0] = self.rand.randint(len(embeddings))
@@ -55,5 +56,13 @@ class FPFBucketter(Bucketter):
                     embeddings,
                     min_dists
             )
-
-        return reps, dists.transpose()
+            
+        dists = dists.transpose()
+        
+        topk_reps = self.topk(max_k, dists)
+        topk_dists = np.zeros([len(topk_reps), max_k])
+        
+        for i in range(len(topk_dists)):
+            topk_dists[i] = dists[i, topk_reps[i]]
+            
+        return reps, topk_reps, topk_dists
