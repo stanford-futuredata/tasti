@@ -8,7 +8,7 @@ class Index:
     def __init__(self, config):
         self.config = config
         
-    def get_is_close_fn(self, a, b):
+    def is_close(self, a, b):
         raise NotImplementedError
         
     def get_target_dnn_dataset(self):
@@ -86,7 +86,8 @@ class Index:
                 dataset=dataset,
                 target_dnn_outputs=self.target_dnn_outputs,
                 list_of_idxs=self.training_idxs,
-                is_close_fn=self.is_close
+                is_close_fn=self.is_close,
+                length=self.nb_training_its
             )
             dataloader = torch.utils.data.DataLoader(
                 triplet_dataset,

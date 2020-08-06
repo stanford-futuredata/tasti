@@ -109,7 +109,6 @@ class Video(torch.utils.data.Dataset):
         return frame
     
     def __len__(self):
-        return 10000
         return self.length if len(self.list_of_idxs) == 0 else len(self.list_of_idxs)
     
     def __getitem__(self, idx):
