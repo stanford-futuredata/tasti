@@ -4,9 +4,21 @@ import tasti
 import numpy as np
 from tqdm.autonotebook import tqdm
 
+# FIXME use target_dnn_cache
+
 class Index:
     def __init__(self, config):
         self.config = config
+        self.target_dnn_cache = tasti.DNNOutputCache(
+            self.get_target_dnn(),
+            self.get_target_dnn_dataset(),
+            self.target_dnn_callback
+        )
+        self.target_dnn_cache = self.override_target_dnn_cache(self.target_dnn_cache)
+        self.rand = np.random.RandomState(seed=1)
+        
+    def override_target_dnn_cache(self, target_dnn_cache):
+        return target_dnn_cache
         
     def is_close(self, a, b):
         raise NotImplementedError
@@ -24,7 +36,7 @@ class Index:
         raise NotImplementedError
         
     def target_dnn_callback(self, target_dnn_output):
-        return target_dnn_output
+        return len(target_dnn_output)
 
     def do_mining(self):
         if self.config.do_mining:
@@ -40,7 +52,7 @@ class Index:
             )
             
             embeddings = []
-            for batch in tqdm(dataloader, desc='FPF Mining'):
+            for batch in tqdm(dataloader, desc='Embedding DNN'):
                 batch = batch.cuda()
                 with torch.no_grad():
                     output = model(batch).cpu()
@@ -64,30 +76,16 @@ class Index:
             model.eval()
             model.cuda()
             
-            dataset = self.get_target_dnn_dataset()
-            self.target_dnn_outputs = [None for i in range(10000)]
-            
-            for idx in tqdm(self.training_idxs, desc='Target DNN Invocations'):
-                data = dataset[idx].unsqueeze(0).cuda() # is .unsqueeze bad?
-                with torch.no_grad():
-                    out = model(data) 
-                    try:
-                        out = out.cpu()
-                    except:
-                        pass
-                    out = self.target_dnn_callback(out)
-                self.target_dnn_outputs[idx] = out
-            
-            del dataset
-            del model
+            for idx in tqdm(self.training_idxs, desc='Target DNN'):
+                self.target_dnn_cache[idx]
             
             dataset = self.get_embedding_dnn_dataset()
             triplet_dataset = tasti.data.TripletDataset(
                 dataset=dataset,
-                target_dnn_outputs=self.target_dnn_outputs,
+                target_dnn_cache=self.target_dnn_cache,
                 list_of_idxs=self.training_idxs,
                 is_close_fn=self.is_close,
-                length=self.nb_training_its
+                length=self.config.nb_training_its
             )
             dataloader = torch.utils.data.DataLoader(
                 triplet_dataset,
@@ -101,7 +99,7 @@ class Index:
             loss_fn = tasti.TripletLoss(self.config.train_margin)
             optimizer = torch.optim.Adam(model.parameters(), lr=self.config.train_lr)
             
-            for anchor, positive, negative in tqdm(dataloader, desc='Step'):
+            for anchor, positive, negative in tqdm(dataloader, desc='Training Step'):
                 anchor = anchor.cuda(non_blocking=True)
                 positive = positive.cuda(non_blocking=True)
                 negative = negative.cuda(non_blocking=True)
@@ -115,36 +113,52 @@ class Index:
                 loss.backward()
                 optimizer.step()
                 
-            torch.save(model.state_dict(), 'model.pt')
+            torch.save(model.state_dict(), './cache/model.pt')
             self.embedding_dnn_trained = model
             
-            del dataset
-            del triplet_dataset
-            del dataloader
-            
     def do_infer(self):
-        model = self.embedding_dnn_trained
-        model.eval()
-        model.cuda()
-        dataset = self.get_embedding_dnn_dataset()
-        dataloader = torch.utils.data.DataLoader(
-            dataset,
-            batch_size=self.config.batch_size,
-            shuffle=False,
-        )
-        
-        embeddings = []
-        for batch in tqdm(dataloader, desc='Inference'):
-            batch = batch.cuda()
-            with torch.no_grad():
-                output = model(batch).cpu()
-            embeddings.append(output)  
-        embeddings = torch.cat(embeddings, dim=0)
-        embeddings = embeddings.numpy()
-        
-        np.save('embeddings.npy', embeddings)
-        self.embeddings = embeddings
+        if self.config.do_infer:
+            model = self.embedding_dnn_trained
+            model.eval()
+            model.cuda()
+            dataset = self.get_embedding_dnn_dataset()
+            dataloader = torch.utils.data.DataLoader(
+                dataset,
+                batch_size=self.config.batch_size,
+                shuffle=False,
+            )
+
+            embeddings = []
+            for batch in tqdm(dataloader, desc='Inference'):
+                batch = batch.cuda()
+                with torch.no_grad():
+                    output = model(batch).cpu()
+                embeddings.append(output)  
+            embeddings = torch.cat(embeddings, dim=0)
+            embeddings = embeddings.numpy()
+
+            np.save('embeddings.npy', embeddings)
+            self.embeddings = embeddings
+        else:
+            self.embeddings = np.load('./cache/embeddings.npy')
         
     def do_bucketting(self):
-        bucketter = tasti.bucketters.FPFBucketter(self.config.nb_buckets)
-        self.reps, self.topk_reps, self.topk_dists = bucketter.bucket(self.embeddings, self.config.max_k)
+        if self.config.do_bucketting:
+            bucketter = tasti.bucketters.FPFBucketter(self.config.nb_buckets)
+            self.reps, self.topk_reps, self.topk_dists = bucketter.bucket(self.embeddings, self.config.max_k)
+            np.save('./cache/reps.npy', self.reps)
+            np.save('./cache/topk_reps.npy', self.topk_reps)
+            np.save('./cache/topk_dists.npy', self.topk_dists)
+        else:
+            self.reps = np.load('./cache/reps.npy')
+            self.topk_reps = np.load('./cache/topk_reps.npy')
+            self.topk_dists = np.load('./cache/topk_dists.npy')
+            
+    def init(self):
+        self.do_mining()
+        self.do_training()
+        self.do_infer()
+        self.do_bucketting()
+        
+        for rep in tqdm(self.reps, desc='Target DNN Invocations'):
+            self.target_dnn_cache[rep]

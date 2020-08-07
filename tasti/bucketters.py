@@ -49,7 +49,16 @@ class FPFBucketter(Bucketter):
                 min_dists
         )
 
-        for i in tqdm.tqdm(range(1, self.nb_buckets), desc='FPFBucketter'):
+        num_random = int((0.25)*len(reps))
+        for i in tqdm.tqdm(range(1, num_random), desc='RandomBucketter'):
+            reps[i] = self.rand.randint(len(embeddings))
+            dists[i, :] = get_and_update_dists(
+                    embeddings[reps[i]],
+                    embeddings,
+                    min_dists
+            )
+
+        for i in tqdm.tqdm(range(num_random, self.nb_buckets), desc='FPFBucketter'):
             reps[i] = np.argmax(min_dists)
             dists[i, :] = get_and_update_dists(
                     embeddings[reps[i]],
@@ -58,11 +67,14 @@ class FPFBucketter(Bucketter):
             )
             
         dists = dists.transpose()
-        
         topk_reps = self.topk(max_k, dists)
+            
         topk_dists = np.zeros([len(topk_reps), max_k])
         
         for i in range(len(topk_dists)):
             topk_dists[i] = dists[i, topk_reps[i]]
+            
+        for i in range(len(topk_reps)):
+            topk_reps[i] = reps[topk_reps[i]]
             
         return reps, topk_reps, topk_dists
