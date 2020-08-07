@@ -23,7 +23,6 @@ You can download the `night-street` video data [here](https://google.com). You w
 ```
 import tasti
 config = tasti.examples.NightStreetOfflineConfig()
-config.do_bucket = True
 
 index = tasti.examples.NightStreetOfflineIndex(config)
 index.init()
