@@ -101,22 +101,24 @@ class Index:
                 anchor = anchor.cuda(non_blocking=True)
                 positive = positive.cuda(non_blocking=True)
                 negative = negative.cuda(non_blocking=True)
-
+                
                 e_a = model(anchor)
                 e_p = model(positive)
                 e_n = model(negative)
-
+                
                 optimizer.zero_grad()
                 loss = loss_fn(e_a, e_p, e_n)
                 loss.backward()
                 optimizer.step()
                 
             torch.save(model.state_dict(), './cache/model.pt')
-            self.embedding_dnn_trained = model
+            self.embedding_dnn = model
+        else:
+            self.embedding_dnn = self.get_embedding_dnn()
             
     def do_infer(self):
         if self.config.do_infer:
-            model = self.embedding_dnn_trained
+            model = self.embedding_dnn
             model.eval()
             model.cuda()
             dataset = self.get_embedding_dnn_dataset()
@@ -128,7 +130,10 @@ class Index:
 
             embeddings = []
             for batch in tqdm(dataloader, desc='Inference'):
-                batch = batch.cuda()
+                try:
+                    batch = batch.cuda()
+                except:
+                    pass
                 with torch.no_grad():
                     output = model(batch).cpu()
                 embeddings.append(output)  
@@ -142,7 +147,7 @@ class Index:
         
     def do_bucketting(self):
         if self.config.do_bucketting:
-            bucketter = tasti.bucketters.FPFBucketter(self.config.nb_buckets)
+            bucketter = tasti.bucketters.FPFRandomBucketter(self.config.nb_buckets)
             self.reps, self.topk_reps, self.topk_dists = bucketter.bucket(self.embeddings, self.config.max_k)
             np.save('./cache/reps.npy', self.reps)
             np.save('./cache/topk_reps.npy', self.topk_reps)

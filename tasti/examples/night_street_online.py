@@ -8,6 +8,7 @@ import torchvision
 import numpy as np
 import pandas as pd
 from tqdm.autonotebook import tqdm
+from scipy.spatial import distance
 from collections import defaultdict
 import torchvision.transforms as transforms
 from tasti.examples.night_street_offline import VideoDataset
@@ -77,12 +78,12 @@ class NightStreetOnlineIndex(tasti.Index):
         return video
     
     def target_dnn_callback(self, target_dnn_output):
-        boxes = result[0]['boxes'].detach().cpu().numpy()
-        confidences = result[0]['scores'].detach().cpu().numpy()
-        object_ids = result[0]['labels'].detach().cpu().numpy()
+        boxes = target_dnn_output[0]['boxes'].detach().cpu().numpy()
+        confidences = target_dnn_output[0]['scores'].detach().cpu().numpy()
+        object_ids = target_dnn_output[0]['labels'].detach().cpu().numpy()
         label = []
         for i in range(len(boxes)):
-            object_name = COCO_INSTANCE_CATEGORY_NAMES[object_id]
+            object_name = COCO_INSTANCE_CATEGORY_NAMES[object_ids[i]]
             if confidences[i] > 0.95 and object_name in ['car', 'bus']:
                 box = Box(boxes[i], object_ids[i], confidences[i])
                 label.append(box)
@@ -103,15 +104,22 @@ class NightStreetOnlineIndex(tasti.Index):
 class NightStreetOnlineConfig(tasti.IndexConfig):
     def __init__(self):
         super().__init__()
-        self.do_mining = True
-        self.do_training = True
-        self.do_infer = True
+        self.do_mining = False
+        self.do_training = False
+        self.do_infer = False
         self.do_bucketting = True
         
         self.batch_size = 16
-        self.nb_train = 3000
+        self.nb_train = 500
         self.train_margin = 1.0
         self.train_lr = 1e-4
         self.max_k = 5
-        self.nb_buckets = 7000
-        self.nb_training_its = 12000
+        self.nb_buckets = 500
+        self.nb_training_its = 1000
+        
+if __name__ == '__main__':
+    config = NightStreetOnlineConfig()
+    index = NightStreetOnlineIndex(config)
+    index.init()
+    
+    # TODO: implement all queries

@@ -6,6 +6,7 @@ import torch
 import pandas as pd
 import numpy as np
 import torchvision
+from scipy.spatial import distance
 import torchvision.transforms as transforms
 from collections import defaultdict
 from tqdm.autonotebook import tqdm
@@ -91,7 +92,7 @@ def night_street_target_dnn_transform_fn(frame):
     frame = torchvision.transforms.functional.to_tensor(frame)
     return frame
 
-def night_street_is_close_helper(self, label1, label2):
+def night_street_is_close_helper(label1, label2):
     if len(label1) != len(label2):
         return False
     counter = 0
@@ -104,7 +105,7 @@ def night_street_is_close_helper(self, label1, label2):
             xavg2 = (obj2.xmin + obj2.xmax) / 2.0
             yavg2 = (obj2.ymin + obj2.ymax) / 2.0
             coord2 = [xavg2, yavg2]
-            if distance.euclidean(coord1, coord2) < self.threshold:
+            if distance.euclidean(coord1, coord2) < 100:
                 counter += 1
                 break
         if expected_counter != counter:
@@ -162,7 +163,7 @@ class NightStreetOfflineConfig(tasti.IndexConfig):
         self.do_infer = True
         self.do_bucketting = True
         
-        self.batch_size = 16
+        self.batch_size = 8
         self.nb_train = 3000
         self.train_margin = 1.0
         self.train_lr = 1e-4

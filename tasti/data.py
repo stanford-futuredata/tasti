@@ -63,7 +63,7 @@ class TripletDataset(torch.utils.data.Dataset):
                 break
             else:
                 anchor_idx, positive_idx, negative_idx = get_triplet_helper()
-
+        
         anchor = self.dataset[anchor_idx]
         positive = self.dataset[positive_idx]
         negative = self.dataset[negative_idx]
