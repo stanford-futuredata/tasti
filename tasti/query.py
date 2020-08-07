@@ -30,11 +30,10 @@ class BaseQuery:
         
     def execute(self):
         raise NotImplementedError
-        
-        
+           
 class AggregateQuery(BaseQuery):
     def score(self, target_dnn_output):
-        return len(target_dnn_output)
+        raise NotImplementedError
     
     def execute(self):
         y_pred, y_true = self.propagate(
@@ -56,7 +55,7 @@ class AggregateQuery(BaseQuery):
     
 class SUPGPrecisionQuery(BaseQuery):
     def score(self, target_dnn_output):
-        return 1.0 if len(target_dnn_output) > 0 else 0.0
+        raise NotImplementedError
     
     def execute(self):
         y_pred, y_true = self.propagate(

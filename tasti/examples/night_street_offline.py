@@ -10,7 +10,7 @@ import torchvision.transforms as transforms
 from collections import defaultdict
 from tqdm.autonotebook import tqdm
 
-class Video(torch.utils.data.Dataset):
+class VideoDataset(torch.utils.data.Dataset):
     def __init__(self, video_fp, list_of_idxs=[], transform_fn=lambda x: x):
         self.video_fp = video_fp
         self.list_of_idxs = []
@@ -60,11 +60,10 @@ class Video(torch.utils.data.Dataset):
             frame = self.frames[idx]
         return frame   
 
-class Labels:
+class LabelDataset(torch.utils.data.Dataset):
     def __init__(self, labels_fp, length):
-        labels_fp = '/lfs/1/jtguibas/data/labels/jackson-town-square-2017-12-17.csv'
         df = pd.read_csv(labels_fp)
-        df = df[df['object_name'].isin(['car'])]
+        df = df[df['object_name'].isin(['car', 'bus'])]
         frame_to_rows = defaultdict(list)
         for row in df.itertuples():
             frame_to_rows[row.frame].append(row)
@@ -123,21 +122,21 @@ class NightStreetOfflineIndex(tasti.Index):
         return model
     
     def get_target_dnn_dataset(self):
-        video = Video(
+        video = VideoDataset(
             video_fp='/lfs/1/jtguibas/data/2017-12-17',
             transform_fn=night_street_target_dnn_transform_fn
         )
         return video
     
     def get_embedding_dnn_dataset(self):
-        video = Video(
+        video = VideoDataset(
             video_fp='/lfs/1/jtguibas/data/2017-12-17',
             transform_fn=night_street_embedding_dnn_transform_fn
         )
         return video
     
     def override_target_dnn_cache(self, target_dnn_cache):
-        labels = Labels(
+        labels = LabelDataset(
             labels_fp='/lfs/1/jtguibas/data/labels/jackson-town-square-2017-12-17.csv',
             length=len(target_dnn_cache)
         )
@@ -158,10 +157,10 @@ class NightStreetOfflineIndex(tasti.Index):
 class NightStreetOfflineConfig(tasti.IndexConfig):
     def __init__(self):
         super().__init__()
-        self.do_mining = False
-        self.do_training = False
-        self.do_infer = False
-        self.do_bucketting = False
+        self.do_mining = True
+        self.do_training = True
+        self.do_infer = True
+        self.do_bucketting = True
         
         self.batch_size = 16
         self.nb_train = 3000
@@ -170,3 +169,15 @@ class NightStreetOfflineConfig(tasti.IndexConfig):
         self.max_k = 5
         self.nb_buckets = 7000
         self.nb_training_its = 12000
+        
+class NightStreetAggregateQuery(tasti.AggregateQuery):
+    def score(self, target_dnn_output):
+        return len(target_dnn_output)
+    
+class NightStreetSUPGPrecisionQuery(tasti.SUPGPrecisionQuery):
+    def score(self, target_dnn_output):
+        return 1.0 if len(target_dnn_output) > 0 else 0.0
+    
+class NightStreetSUPGRecallQuery(tasti.SUPGRecallQuery):
+    def score(self, target_dnn_output):
+        return 1.0 if len(target_dnn_output) > 0 else 0.0

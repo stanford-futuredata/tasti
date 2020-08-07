@@ -34,7 +34,7 @@ class Index:
         raise NotImplementedError
         
     def target_dnn_callback(self, target_dnn_output):
-        return len(target_dnn_output)
+        raise NotImplementedError
 
     def do_mining(self):
         if self.config.do_mining:
