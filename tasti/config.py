@@ -1,9 +1,9 @@
 class IndexConfig:
     def __init__(self):
-        self.do_mining = False
-        self.do_training = False
-        self.do_infer = False
-        self.do_bucketting = False
+        self.do_mining = True
+        self.do_training = True
+        self.do_infer = True
+        self.do_bucketting = True
         
         self.batch_size = 16
         self.nb_train = 3000

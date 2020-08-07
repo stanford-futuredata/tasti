@@ -4,8 +4,6 @@ import tasti
 import numpy as np
 from tqdm.autonotebook import tqdm
 
-# FIXME use target_dnn_cache
-
 class Index:
     def __init__(self, config):
         self.config = config
@@ -60,7 +58,7 @@ class Index:
             embeddings = torch.cat(embeddings, dim=0)
             embeddings = embeddings.numpy()
             
-            bucketter = tasti.bucketters.FPFBucketter(self.config.nb_train)
+            bucketter = tasti.bucketters.FPFRandomBucketter(self.config.nb_train)
             reps, _, _ = bucketter.bucket(embeddings, self.config.max_k)
             self.training_idxs = reps
         else:

@@ -2,21 +2,6 @@ import numpy as np
 import tqdm
 from numba import njit, prange
 
-class Bucketter(object):
-    def __init__(
-            self,
-            nb_buckets: int,
-            seed: int=1
-    ):
-        self.nb_buckets = nb_buckets
-        self.rand = np.random.RandomState(seed)
-
-    def topk(self, k, dists):
-        topks = []
-        for i in tqdm.tqdm(range(len(dists))):
-            topks.append(np.argpartition(dists[i], k)[0:k])
-        return np.array(topks)
-
 @njit(parallel=True)
 def get_dists(x, embeddings):
     dists = np.zeros(len(embeddings), dtype=np.float32)
@@ -33,11 +18,27 @@ def get_and_update_dists(x, embeddings, min_dists):
             min_dists[i] = dists[i]
     return dists
 
-class FPFBucketter(Bucketter):
+class Bucketter(object):
+    def __init__(
+            self,
+            nb_buckets: int,
+            seed: int=1
+    ):
+        self.nb_buckets = nb_buckets
+        self.rand = np.random.RandomState(seed)
+
+    def topk(self, k, dists):
+        topks = []
+        for i in tqdm.tqdm(range(len(dists))):
+            topks.append(np.argpartition(dists[i], k)[0:k])
+        return np.array(topks)
+
+class FPFRandomBucketter(Bucketter):
     def bucket(
             self,
             embeddings: np.ndarray,
-            max_k: int
+            max_k: int,
+            percent_fpf=0.75
     ):
         reps = np.full(self.nb_buckets, -1)
         reps[0] = self.rand.randint(len(embeddings))
@@ -49,7 +50,7 @@ class FPFBucketter(Bucketter):
                 min_dists
         )
 
-        num_random = int((0.25)*len(reps))
+        num_random = int((1-percent_fpf)*len(reps))
         for i in tqdm.tqdm(range(1, num_random), desc='RandomBucketter'):
             reps[i] = self.rand.randint(len(embeddings))
             dists[i, :] = get_and_update_dists(
@@ -68,12 +69,10 @@ class FPFBucketter(Bucketter):
             
         dists = dists.transpose()
         topk_reps = self.topk(max_k, dists)
-            
         topk_dists = np.zeros([len(topk_reps), max_k])
         
         for i in range(len(topk_dists)):
             topk_dists[i] = dists[i, topk_reps[i]]
-            
         for i in range(len(topk_reps)):
             topk_reps[i] = reps[topk_reps[i]]
             
