@@ -20,6 +20,27 @@ Hardware requirements will vary depending on the dataset and hyperparameters.
 
 You can download the `night-street` video data [here](https://google.com). You will need to install [swag](https://google.com) to use it appropriately. If you don't want to download the entire video, we also provide pre-computed embeddings [here](https://google.com).
 
+```
+import tasti
+config = tasti.examples.NightStreetOfflineConfig()
+config.do_bucket = True
+
+index = tasti.examples.NightStreetOfflineIndex(config)
+index.init()
+
+query = tasti.examples.NightStreetAggregateQuery(index)
+result = query.execute()
+print(result)
+
+query = tasti.examples.NigthStreetSUPGPrecisionQuery(index)
+result = query.execute()
+print(result)
+
+query = tasti.examples.NightStreetSUPGRecallQuery(index)
+result = query.execute()
+print(result)
+```
+
 
 
 
