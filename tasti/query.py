@@ -38,11 +38,13 @@ class AggregateQuery(BaseQuery):
     def execute(self):
         y_pred, y_true = self.propagate(
             self.index.target_dnn_cache,
-            self.index.reps,
-            self.index.topk_reps,
-            self.index.topk_dists
+            self.index.reps, self.index.topk_reps, self.index.topk_dists
         )
-        sampler = ControlCovariateSampler(0.01, 0.05, y_pred, y_true, np.amax(np.rint(y_pred))+1)
+        
+        err_tol = 0.01
+        confidence = 0.05
+        r = np.amax(np.rint(y_pred)) + 1
+        sampler = ControlCovariateSampler(err_tol, confidence, y_pred, y_true, r)
         estimate, nb_samples = sampler.sample()
         
         print('Results')
@@ -90,16 +92,14 @@ class SUPGPrecisionQuery(BaseQuery):
     def execute(self):
         y_pred, y_true = self.propagate(
             self.index.target_dnn_cache,
-            self.index.reps,
-            self.index.topk_reps,
-            self.index.topk_dists
+            self.index.reps, self.index.topk_reps, self.index.topk_dists
         )
         
         source = datasource.RealtimeDataSource(y_pred, y_true)
         sampler = ImportanceSampler()
         query = ApproxQuery(
             qtype='rt',
-            min_recall=0.90, min_precision=0.90, delta=0.05,
+            min_recall=0.95, min_precision=0.95, delta=0.05,
             budget=10000
         )
         selector = ImportancePrecisionTwoStageSelector(query, source, sampler)
@@ -118,9 +118,7 @@ class SUPGRecallQuery(SUPGPrecisionQuery):
     def execute(self):
         y_pred, y_true = self.propagate(
             self.index.target_dnn_cache,
-            self.index.reps,
-            self.index.topk_reps,
-            self.index.topk_dists
+            self.index.reps, self.index.topk_reps, self.index.topk_dists
         )
         
         source = datasource.RealtimeDataSource(y_pred, y_true)
@@ -135,6 +133,8 @@ class SUPGRecallQuery(SUPGPrecisionQuery):
         
         print('Results')
         print('=======')
+        print('Initial Estimate:', y_pred.sum())
+        print('Debiased Estimate:', inds.shape[0])
         print('idxs:', inds)
         print('shape:', inds.shape)
         

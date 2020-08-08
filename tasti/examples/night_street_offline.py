@@ -170,7 +170,7 @@ class NightStreetOfflineConfig(tasti.IndexConfig):
         self.max_k = 5
         self.nb_buckets = 7000
         self.nb_training_its = 12000
-        
+
 class NightStreetAggregateQuery(tasti.AggregateQuery):
     def score(self, target_dnn_output):
         return len(target_dnn_output)
@@ -220,4 +220,25 @@ class NightStreetAveragePositionAggregateQuery(tasti.AggregateQuery):
                 avg += x / 1750
             return avg / len(boxes)
         return proc_boxes(target_dnn_output)
+    
+    def execute(self):
+        y_pred, y_true = self.propagate(
+            self.index.target_dnn_cache,
+            self.index.reps, self.index.topk_reps, self.index.topk_dists
+        )
+        
+        err_tol = 0.01 / 2
+        confidence = 0.05
+        r = np.amax(np.rint(y_pred)) + 1
+        sampler = ControlCovariateSampler(err_tol, confidence, y_pred, y_true, r)
+        estimate, nb_samples = sampler.sample()
+        
+        print('Results')
+        print('=======')
+        print('Initial Estimate:', y_pred.sum())
+        print('Debiased Estimate:', estimate)
+        print('True Estimate:', y_true.sum())
+        print('Samples:', nb_samples)
+        
+        return {'initial_estimate': y_pred.sum(), 'debiased_estimate': estimate, 'samples': nb_samples}
     
