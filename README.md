@@ -14,7 +14,7 @@ Install the requitements with `pip install -r requirements.txt`. You will also n
 To reproduce the experiments regarding the video `night-street` your machine will need:
 - 300+GB of memory
 - 500+GB of space
-- A GPU (this has only been tested with NVIDIA P100 and V100)
+- A GPU
 
 Hardware requirements will vary depending on the dataset and hyperparameters.
 
