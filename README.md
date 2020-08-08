@@ -6,8 +6,7 @@ Please read the [paper](https://google.com) for full technical details.
 
 # Requirements
 
-For requirements, take a look at requirements.txt. You can install everything with:
-`pip install -r requirements.txt`. You will also need (install via `pip install -e .`):
+Install the requitements with: `pip install -r requirements.txt`. You will also need (via `pip install -e .`):
 - [SWAG](https://github.com/stanford-futuredata/swag-python)
 - [BlazeIt](https://github.com/stanford-futuredata/blazeit)
 - [SUPG](https://github.com/stanford-futuredata/supg)
@@ -21,7 +20,7 @@ Hardware requirements will vary depending on the dataset and hyperparameters.
 
 # Quickstart
 
-We provide example code for creating a TASTI for the `night-street` video dataset along with several queries mentioned in the paper (Aggregation, Limit, SUPG). You can find the data available [here](https://drive.google.com/drive/u/1/folders/1rO2dJkHurbrKHf5cHtFra01uk5hlhHdO). If you are running the offline example (target dnn outputs for every frame in the video are precomputed), you will need to also download [this](https://drive.google.com/drive/u/1/folders/1rO2dJkHurbrKHf5cHtFra01uk5hlhHdO). For more details, read the annotated code in `tasti/examples/night_street_ofline.py`.
+We provide example code for creating a TASTI for the `night-street` video dataset along with several queries mentioned in the paper (aggregation, limit, SUPG, etc). You can find the data available [here](https://drive.google.com/drive/u/1/folders/1riFVI6QZGf8X6lyFphyRighAYMDTAH4Z). If you are running the offline example (target dnn outputs for every record are precomputed), you will need to download [this](https://drive.google.com/drive/u/1/folders/1rO2dJkHurbrKHf5cHtFra01uk5hlhHdO). For more details, read the annotated code in `tasti/examples/night_street_ofline.py`.
 
 ```
 import tasti
@@ -46,7 +45,7 @@ We also provide an online version of the code that allows you to run the Target 
 
 # Customizing TASTI
 
-Our code allows for you to create your own TASTI. You will have to sub-class the tasti.Index class and implement a few functions:
+Our code allows for you to create your own TASTI. You will have to sub-class the `tasti.Index` class and implement a few functions:
 
 ```
 import tasti
