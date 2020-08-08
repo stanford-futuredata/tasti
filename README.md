@@ -52,9 +52,9 @@ query = tasti.examples.NightStreetAveragePositionAggregateQuery(index)
 query.execute_metrics()
 ```
 
-Note that the experimental setup differs slightly from the paper. First, the experiments of the paper use different days of video to imitate the BlazeIt experiemnts. Second, for the aggregation and supg queries, we average the results from 100 trials. 
+Note that the experimental setup differs slightly from the paper. First, the experiments of the paper use different days of video to imitate the BlazeIt experiements. Second, for the aggregation and supg queries, we average the results from 100 trials. 
 
-We also provide an online version of the code that allows you to run the Target DNN in realtime. For efficieny purposes, we implement [Mask R-CNN ResNet-50 FPN](https://pytorch.org/docs/stable/torchvision/models.html#object-detection-instance-segmentation-and-person-keypoint-detection) with significantly less intensive hyperparameters. However, the actual model used in the experiments of the paper is the Mask R-CNN X 152 model available in [detectron2](https://github.com/facebookresearch/detectron2). We encourage you to replace the inference with TensorRT or another more optimized model serving system for more serious needs.
+We also provide an online version of the code that allows you to run the target dnn in realtime. For efficieny purposes, we implement [Mask R-CNN ResNet-50 FPN](https://pytorch.org/docs/stable/torchvision/models.html#object-detection-instance-segmentation-and-person-keypoint-detection) with significantly less intensive hyperparameters. However, the actual model used in the experiments of the paper is the Mask R-CNN X 152 model available in [detectron2](https://github.com/facebookresearch/detectron2). We encourage you to replace the inference with TensorRT or another more optimized model serving system for more serious needs.
 
 # Customizing TASTI
 
