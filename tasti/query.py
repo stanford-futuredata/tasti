@@ -53,6 +53,36 @@ class AggregateQuery(BaseQuery):
         
         return {'initial_estimate': y_pred.sum(), 'debiased_estimate': estimate, 'samples': nb_samples}
     
+class LimitQuery(BaseQuery):
+    def score(self, target_dnn_output):
+        return len(target_dnn_output)
+    
+    def execute(self, want_to_find, GAP=300):
+        y_pred, y_true = self.propagate(
+            self.index.target_dnn_cache,
+            self.index.reps, self.index.topk_reps, self.index.topk_dists
+        )
+        order = np.argsort(y_pred)[::-1]
+        ret_inds = []
+        visited = set()
+        nb_calls = 0
+        for ind in order:
+            if ind in visited:
+                continue
+            nb_calls += 1
+            if float(y_true[ind]) >= want_to_find:
+                ret_inds.append(ind)
+                for offset in range(-GAP, GAP+1):
+                    visited.add(offset + ind)
+            if len(ret_inds) >= 10:
+                break
+                
+        print('Results')
+        print('=======')
+        print('Number of Calls:', nb_calls)
+        print('Indexes:', ret_inds)
+        return {'nb_calls': nb_calls, 'ret_inds': ret_inds}
+    
 class SUPGPrecisionQuery(BaseQuery):
     def score(self, target_dnn_output):
         raise NotImplementedError
