@@ -6,8 +6,7 @@ Please read the [paper](https://google.com) for full technical details.
 
 # Requirements
 
-For requirements, take a look at requirements.txt. You can automatically install everything with:
-`pip install -r requirements.txt`. You will also need:
+Install the requitements with `pip install -r requirements.txt`. You will also need (via `pip install -e .`):
 - [SWAG](https://github.com/stanford-futuredata/swag-python)
 - [BlazeIt](https://github.com/stanford-futuredata/blazeit)
 - [SUPG](https://github.com/stanford-futuredata/supg)
@@ -15,40 +14,53 @@ For requirements, take a look at requirements.txt. You can automatically install
 To reproduce the experiments regarding the video `night-street` your machine will need:
 - 300+GB of memory
 - 500+GB of space
-- A GPU (this has only been tested with NVIDIA P100 and V100)
+- GPU (e.g., NVIDIA V100, TITAN V)
 
 Hardware requirements will vary depending on the dataset and hyperparameters.
 
-# Quickstart
+# Reproducing Experiments
 
-We provide example code for creating a TASTI for the `night-street` video dataset along with several queries mentioned in the paper (Aggregation, Limit, SUPG, etc). You can find the data available [here](https://drive.google.com/drive/u/1/folders/1rO2dJkHurbrKHf5cHtFra01uk5hlhHdO). If you are running the offline example (target dnn outputs for every frame in the video are precomputed), you will need to also download [this](https://drive.google.com/drive/u/1/folders/1rO2dJkHurbrKHf5cHtFra01uk5hlhHdO). For more details, read the annotated code in `tasti/examples/night_street_ofline.py`.
+We provide code for creating a TASTI for the `night-street` video dataset along with several queries mentioned in the paper (aggregation, limit, SUPG, etc). You can download the `night-street` video dataset [here](https://drive.google.com/drive/folders/1phQuGu4oWwbArurprqruMztTdP1Fzz2F?usp=sharing). Download the `2017-12-17.zip` file. Unzip the file and place the video data in `/lfs/1/jtguibas/data` (feel free to change this path in night_street_offline.py). For speed purposes, the target dnn will not run in realtime and we have instead provided the outputs [here](https://drive.google.com/drive/folders/1phQuGu4oWwbArurprqruMztTdP1Fzz2F?usp=sharing). Place the csv file in `/lfs/1/jtguibas/data`. Then, you can reproduce the experiments by running:
 
-```
+```python
+# night_street_offline.py
+
 import tasti
 config = tasti.examples.NightStreetOfflineConfig()
 index = tasti.examples.NightStreetOfflineIndex(config)
 index.init()
 
 query = tasti.examples.NightStreetAggregateQuery(index)
-result = query.execute()
-print(result)
+query.execute_metrics()
 
-query = tasti.examples.NigthStreetSUPGPrecisionQuery(index)
-result = query.execute()
-print(result)
+query = tasti.examples.NightStreetLimitQuery(index)
+query.execute_metrics(5)
+
+query = tasti.examples.NightStreetSUPGPrecisionQuery(index)
+query.execute_metrics()
 
 query = tasti.examples.NightStreetSUPGRecallQuery(index)
-result = query.execute()
-print(result)
+query.execute_metrics()
+
+query = tasti.examples.NightStreetLHSPrecisionQuery(index)
+query.execute_metrics()
+
+query = tasti.examples.NightStreetLHSRecallQuery(index)
+query.execute_metrics()
+
+query = tasti.examples.NightStreetAveragePositionAggregateQuery(index)
+query.execute_metrics()
 ```
 
-We also provide an online version of the code that allows you to run the Target DNN in realtime. For speed purposes, we implement [Mask R-CNN ResNet-50 FPN](https://pytorch.org/docs/stable/torchvision/models.html#object-detection-instance-segmentation-and-person-keypoint-detection). However, the actual model used in the experiments of the paper is Mask R-CNN X 152 model available in [detectron2](https://github.com/facebookresearch/detectron2). The smaller model should provide similar performance.
+Note that the experimental setup differs slightly from the paper. First, the experiments of the paper use different days of video to imitate the BlazeIt experiements. Second, for the aggregation and supg queries, we average the results from 100 trials. 
+
+We also provide an online version of the code that allows you to run the target dnn in realtime. For efficieny purposes, we implement [Mask R-CNN ResNet-50 FPN](https://pytorch.org/docs/stable/torchvision/models.html#object-detection-instance-segmentation-and-person-keypoint-detection) with significantly less intensive hyperparameters. However, the actual model used in the experiments of the paper is the Mask R-CNN X 152 model available in [detectron2](https://github.com/facebookresearch/detectron2). We encourage you to replace the inference with TensorRT or another optimized model serving system for more serious needs.
 
 # Customizing TASTI
 
-Our code allows for you to create your own TASTI. You will have to sub-class the tasti.Index class and implement a few functions:
+Our code allows for you to create your own TASTI. You will have to sub-class the `tasti.Index` class and implement a few functions:
 
-```
+```python
 import tasti
 
 class MyIndex(tasti.Index):
