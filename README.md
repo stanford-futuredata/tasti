@@ -7,7 +7,7 @@ Please read the [paper](https://google.com) for full technical details.
 # Requirements
 
 For requirements, take a look at requirements.txt. You can install everything with:
-`pip install -r requirements.txt`. You will also need (install via `pip install -e .`:
+`pip install -r requirements.txt`. You will also need (install via `pip install -e .`):
 - [SWAG](https://github.com/stanford-futuredata/swag-python)
 - [BlazeIt](https://github.com/stanford-futuredata/blazeit)
 - [SUPG](https://github.com/stanford-futuredata/supg)
