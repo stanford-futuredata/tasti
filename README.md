@@ -56,6 +56,8 @@ Note that the experimental setup differs slightly from the paper. First, the exp
 
 We also provide an online version of the code that allows you to run the target dnn in realtime. For efficieny purposes, we implement [Mask R-CNN ResNet-50 FPN](https://pytorch.org/docs/stable/torchvision/models.html#object-detection-instance-segmentation-and-person-keypoint-detection) with significantly less intensive hyperparameters. However, the actual model used in the experiments of the paper is the Mask R-CNN X 152 model available in [detectron2](https://github.com/facebookresearch/detectron2). We encourage you to replace the inference with TensorRT or another optimized model serving system for more serious needs.
 
+To run the WikiSQL example, download the data [here](https://github.com/salesforce/WikiSQL). 
+
 # Customizing TASTI
 
 Our code allows for you to create your own TASTI. You will have to sub-class the `tasti.Index` class and implement a few functions:
