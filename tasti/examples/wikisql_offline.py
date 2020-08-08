@@ -19,35 +19,39 @@ class WikiSQLDataset(torch.utils.data.Dataset):
                 text = text.replace('?', '') # TODO: ??
                 data.append((text, sql['agg'], len(sql['conds'])))
         self.df = pd.DataFrame(data, columns=['text', 'agg', 'conds'])
+        self.vectors = FastText(cache='./cache/vectors.pth')
 
     def __len__(self):
         return len(self.df)
 
+    def embed(self, text):
+        words = text.split(' ') # FIXME
+        emb = self.vectors[words[0]]
+        for word in words[1:]:
+            emb += self.vectors[word]
+        emb /= len(words)
+        return emb
+    
     def __getitem__(self, idx):
         text = self.df.loc[idx, 'text']
         agg = self.df.loc[idx, 'agg']
         conds = self.df.loc[idx, 'conds']
         if self.mode == 'input':
-            return text
+            return self.embed(text)
         else:
             return agg, conds
-
-class FastTextEmbedder(nn.Module):
-    def __init__(self):
-        super().__init__()
-        self.vectors = FastText(cache='./vectors.pth')
         
-    def forward(self, sentences):
-        embs = []
-        for x in sentences:
-            words = x.split(' ')
-            emb = self.vectors[words[0]]
-            for word in words[1:]:
-                emb += self.vectors[word]
-            emb /= len(words)
-            embs.append(emb.reshape(1, -1))
-        embs = torch.cat(embs, dim=0)
-        return embs
+class Embedder(nn.Module):
+    def __init__(self, nb_out=128):
+        super().__init__()
+        self.mlp = nn.Sequential(
+                nn.Linear(300, 128),
+                nn.ReLU(inplace=True),
+                nn.Linear(128, nb_out)
+        )
+
+    def forward(self, x):
+        return self.mlp(x)
 
 class WikiSQLOfflineIndex(tasti.Index):
     def get_target_dnn(self):
@@ -55,7 +59,7 @@ class WikiSQLOfflineIndex(tasti.Index):
         return model
         
     def get_embedding_dnn(self):
-        model = FastTextEmbedder()
+        model = Embedder()
         return model
     
     def get_target_dnn_dataset(self):
@@ -87,19 +91,23 @@ class WikiSQLSUPGPrecisionQuery(tasti.SUPGPrecisionQuery):
 class WikiSQLOfflineConfig(tasti.IndexConfig):
     def __init__(self):
         super().__init__()
-        self.do_mining = False
-        self.do_training = False
+        self.do_mining = True
+        self.do_training = True
         self.do_infer = True
+        self.do_bucketting = True
+        self.nb_train = 500
         self.nb_buckets = 500
         self.batch_size = 1
         
-        
 if __name__ == '__main__':
+    config = WikiSQLOfflineConfig()
     index = WikiSQLOfflineIndex(config)
     index.init()
-
-    query = NightStreetAggregateQuery(index)
-    query.execute()
-
-    query = NightStreetSUPGPrecisionQuery(index)
-    query.execute()
+    
+    query = WikiSQLAggregateQuery(index)
+    result = query.execute()
+    print(result)
+    
+    query = WikiSQLSUPGPrecisionQuery(index)
+    result = query.execute()
+    print(result)

@@ -242,3 +242,29 @@ class NightStreetAveragePositionAggregateQuery(tasti.AggregateQuery):
         
         return {'initial_estimate': y_pred.sum(), 'debiased_estimate': estimate, 'samples': nb_samples}
     
+if __name__ == '__main__':
+    config = NightStreetOfflineConfig()
+    index = NightStreetOfflineIndex(config)
+    index.init()
+
+    query = NightStreetAggregateQuery(index)
+    query.execute()
+
+    query = NightStreetLimitQuery(index)
+    query.execute(5)
+
+    query = NightStreetSUPGPrecisionQuery(index)
+    query.execute()
+
+    query = NightStreetSUPGRecallQuery(index)
+    query.execute()
+
+    query = NightStreetLHSPrecisionQuery(index)
+    query.execute()
+
+    query = NightStreetLHSRecallQuery(index)
+    query.execute()
+
+    query = NightStreetAveragePositionAggregateQuery(index)
+    query.execute()
+    

@@ -84,7 +84,7 @@ class NightStreetOnlineIndex(tasti.Index):
         label = []
         for i in range(len(boxes)):
             object_name = COCO_INSTANCE_CATEGORY_NAMES[object_ids[i]]
-            if confidences[i] > 0.95 and object_name in ['car', 'bus']:
+            if confidences[i] > 0.95 and object_name in ['car']:
                 box = Box(boxes[i], object_ids[i], confidences[i])
                 label.append(box)
         return label
@@ -118,8 +118,27 @@ class NightStreetOnlineConfig(tasti.IndexConfig):
         self.nb_training_its = 1000
         
 if __name__ == '__main__':
-    config = NightStreetOnlineConfig()
-    index = NightStreetOnlineIndex(config)
+    config = NightStreetOfflineConfig()
+    index = NightStreetOfflineIndex(config)
     index.init()
-    
-    # TODO: implement all queries
+
+    query = NightStreetAggregateQuery(index)
+    query.execute()
+
+    query = NightStreetLimitQuery(index)
+    query.execute(5)
+
+    query = NightStreetSUPGPrecisionQuery(index)
+    query.execute()
+
+    query = NightStreetSUPGRecallQuery(index)
+    query.execute()
+
+    query = NightStreetLHSPrecisionQuery(index)
+    query.execute()
+
+    query = NightStreetLHSRecallQuery(index)
+    query.execute()
+
+    query = NightStreetAveragePositionAggregateQuery(index)
+    query.execute()
