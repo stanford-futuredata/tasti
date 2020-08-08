@@ -7,7 +7,10 @@ Please read the [paper](https://google.com) for full technical details.
 # Requirements
 
 For requirements, take a look at requirements.txt. You can automatically install everything with:
-`pip install -r requirements.txt`
+`pip install -r requirements.txt`. You will also need:
+- [SWAG](https://github.com/stanford-futuredata/swag-python)
+- [BlazeIt](https://github.com/stanford-futuredata/blazeit)
+- [SUPG](https://github.com/stanford-futuredata/supg)
 
 To reproduce the experiments regarding the video `night-street` your machine will need:
 - 300+GB of memory
