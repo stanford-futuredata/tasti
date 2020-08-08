@@ -42,7 +42,7 @@ result = query.execute()
 print(result)
 ```
 
-We also provide an online version of the code that allows you to run the Target DNN in realtime. For speed purposes, we implement [Mask R-CNN ResNet-50 FPN](https://pytorch.org/docs/stable/torchvision/models.html#object-detection-instance-segmentation-and-person-keypoint-detection). However, the actual model used in the experiments of the paper is Mask_R-CNN_X_152 model available in [detectron2](https://github.com/facebookresearch/detectron2). The smaller model should provide similar performance.
+We also provide an online version of the code that allows you to run the Target DNN in realtime. For speed purposes, we implement [Mask R-CNN ResNet-50 FPN](https://pytorch.org/docs/stable/torchvision/models.html#object-detection-instance-segmentation-and-person-keypoint-detection). However, the actual model used in the experiments of the paper is Mask R-CNN X 152 model available in [detectron2](https://github.com/facebookresearch/detectron2). The smaller model should provide similar performance.
 
 # Customizing TASTI
 
