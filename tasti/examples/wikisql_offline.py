@@ -63,17 +63,17 @@ class WikiSQLOfflineIndex(tasti.Index):
         return model
     
     def get_target_dnn_dataset(self):
-        sql_dataset = WikiSQLDataset('/lfs/1/jtguibas/text/data/dev.jsonl')
+        sql_dataset = WikiSQLDataset('/lfs/1/jtguibas/text/data/train.jsonl')
         sql_dataset.mode = 'input'
         return sql_dataset
     
     def get_embedding_dnn_dataset(self):
-        sql_dataset = WikiSQLDataset('/lfs/1/jtguibas/text/data/dev.jsonl')
+        sql_dataset = WikiSQLDataset('/lfs/1/jtguibas/text/data/train.jsonl')
         sql_dataset.mode = 'input'
         return sql_dataset
     
     def override_target_dnn_cache(self, target_dnn_cache):
-        sql_dataset = WikiSQLDataset('/lfs/1/jtguibas/text/data/dev.jsonl')
+        sql_dataset = WikiSQLDataset('/lfs/1/jtguibas/text/data/train.jsonl')
         sql_dataset.mode = 'output'
         return sql_dataset
     

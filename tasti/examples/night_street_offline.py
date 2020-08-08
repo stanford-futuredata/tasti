@@ -10,6 +10,7 @@ from scipy.spatial import distance
 import torchvision.transforms as transforms
 from collections import defaultdict
 from tqdm.autonotebook import tqdm
+from blazeit.aggregation.samplers import ControlCovariateSampler
 
 class VideoDataset(torch.utils.data.Dataset):
     def __init__(self, video_fp, list_of_idxs=[], transform_fn=lambda x: x):
@@ -64,7 +65,7 @@ class VideoDataset(torch.utils.data.Dataset):
 class LabelDataset(torch.utils.data.Dataset):
     def __init__(self, labels_fp, length):
         df = pd.read_csv(labels_fp)
-        df = df[df['object_name'].isin(['car', 'bus'])]
+        df = df[df['object_name'].isin(['car'])]
         frame_to_rows = defaultdict(list)
         for row in df.itertuples():
             frame_to_rows[row.frame].append(row)
@@ -205,7 +206,7 @@ class NightStreetAveragePositionAggregateQuery(tasti.AggregateQuery):
             return avg / len(boxes)
         return proc_boxes(target_dnn_output)
     
-    def execute(self):
+    def _execute(self):
         y_pred, y_true = self.propagate(
             self.index.target_dnn_cache,
             self.index.reps, self.index.topk_reps, self.index.topk_dists
@@ -217,22 +218,22 @@ class NightStreetAveragePositionAggregateQuery(tasti.AggregateQuery):
         sampler = ControlCovariateSampler(err_tol, confidence, y_pred, y_true, r)
         estimate, nb_samples = sampler.sample()
         
-        print('Results')
-        print('=======')
-        print('Initial Estimate:', y_pred.sum())
-        print('Debiased Estimate:', estimate)
-        print('True Estimate:', y_true.sum())
-        print('Samples:', nb_samples)
-        
-        return {'initial_estimate': y_pred.sum(), 'debiased_estimate': estimate, 'samples': nb_samples}
+        res = {
+            'initial_estimate': y_pred.sum(),
+            'debiased_estimate': estimate,
+            'nb_samples': nb_samples,
+            'y_pred': y_pred,
+            'y_true': y_true
+        }
+        return res
     
 class NightStreetOfflineConfig(tasti.IndexConfig):
     def __init__(self):
         super().__init__()
-        self.do_mining = True
-        self.do_training = True
-        self.do_infer = True
-        self.do_bucketting = True
+        self.do_mining = False
+        self.do_training = False
+        self.do_infer = False
+        self.do_bucketting = False
         
         self.batch_size = 8
         self.nb_train = 3000
@@ -248,23 +249,23 @@ if __name__ == '__main__':
     index.init()
 
     query = NightStreetAggregateQuery(index)
-    query.execute()
+    query.execute_metrics()
 
     query = NightStreetLimitQuery(index)
-    query.execute(5)
+    query.execute_metrics(5)
 
     query = NightStreetSUPGPrecisionQuery(index)
-    query.execute()
+    query.execute_metrics()
 
     query = NightStreetSUPGRecallQuery(index)
-    query.execute()
+    query.execute_metrics()
 
     query = NightStreetLHSPrecisionQuery(index)
-    query.execute()
+    query.execute_metrics()
 
     query = NightStreetLHSRecallQuery(index)
-    query.execute()
+    query.execute_metrics()
 
     query = NightStreetAveragePositionAggregateQuery(index)
-    query.execute()
+    query.execute_metrics()
     

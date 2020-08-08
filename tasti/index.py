@@ -140,7 +140,7 @@ class Index:
             embeddings = torch.cat(embeddings, dim=0)
             embeddings = embeddings.numpy()
 
-            np.save('embeddings.npy', embeddings)
+            np.save('./cache/embeddings.npy', embeddings)
             self.embeddings = embeddings
         else:
             self.embeddings = np.load('./cache/embeddings.npy')

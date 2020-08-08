@@ -84,7 +84,7 @@ class CrackingBucketter(Bucketter):
         embeddings: np.ndarray,
         max_k: int,
         idxs: list
-    )
+    ):
         reps = idxs
         min_dists = np.full(len(embeddings), np.Inf, dtype=np.float32)
         dists = np.zeros((len(reps), len(embeddings)), dtype=np.float32)

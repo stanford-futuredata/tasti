@@ -68,6 +68,7 @@ class NightStreetOnlineIndex(tasti.Index):
             video_fp='/lfs/1/jtguibas/data/2017-12-17',
             transform_fn=night_street_target_dnn_transform_fn
         )
+        video.length = 10000
         return video
     
     def get_embedding_dnn_dataset(self):
@@ -75,6 +76,7 @@ class NightStreetOnlineIndex(tasti.Index):
             video_fp='/lfs/1/jtguibas/data/2017-12-17',
             transform_fn=night_street_embedding_dnn_transform_fn
         )
+        video.length = 10000
         return video
     
     def target_dnn_callback(self, target_dnn_output):
@@ -123,22 +125,22 @@ if __name__ == '__main__':
     index.init()
 
     query = NightStreetAggregateQuery(index)
-    query.execute()
+    query.execute_metrics()
 
     query = NightStreetLimitQuery(index)
-    query.execute(5)
+    query.execute_metrics(5)
 
     query = NightStreetSUPGPrecisionQuery(index)
-    query.execute()
+    query.execute_metrics()
 
     query = NightStreetSUPGRecallQuery(index)
-    query.execute()
+    query.execute_metrics()
 
     query = NightStreetLHSPrecisionQuery(index)
-    query.execute()
+    query.execute_metrics()
 
     query = NightStreetLHSRecallQuery(index)
-    query.execute()
+    query.execute_metrics()
 
     query = NightStreetAveragePositionAggregateQuery(index)
-    query.execute()
+    query.execute_metrics()
