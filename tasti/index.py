@@ -157,6 +157,17 @@ class Index:
             self.topk_reps = np.load('./cache/topk_reps.npy')
             self.topk_dists = np.load('./cache/topk_dists.npy')
             
+    def crack(self):
+        cache = self.target_dnn_cache.cache
+        cached_idxs = []
+        for idx in range(len(cache)):
+            if cache[idx] != None:
+                cached_idxs.append(idx)        
+        cached_idxs = np.array(cached_idxs)
+        bucketter = tasti.bucketters.CrackingBucketter(self.config.nb_buckets)
+        self.reps, self.topk_reps, self.topk_dists = bucketter.bucket(self.embeddings, self.config.max_k, cached_idxs)
+
+        
     def init(self):
         self.do_mining()
         self.do_training()

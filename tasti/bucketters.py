@@ -77,3 +77,30 @@ class FPFRandomBucketter(Bucketter):
             topk_reps[i] = reps[topk_reps[i]]
             
         return reps, topk_reps, topk_dists
+    
+class CrackingBucketter(Bucketter):
+    def bucket(
+        self,
+        embeddings: np.ndarray,
+        max_k: int,
+        idxs: list
+    )
+        reps = idxs
+        min_dists = np.full(len(embeddings), np.Inf, dtype=np.float32)
+        dists = np.zeros((len(reps), len(embeddings)), dtype=np.float32)
+        for i in tqdm.tqdm(range(len(reps)), desc='Cracking'):
+            dists[i, :] = get_and_update_dists(
+                    embeddings[reps[i]],
+                    embeddings,
+                    min_dists
+            )
+        dists = dists.transpose()
+        topk_reps = self.topk(max_k, dists)
+        topk_dists = np.zeros([len(topk_reps), max_k])
+        
+        for i in range(len(topk_dists)):
+            topk_dists[i] = dists[i, topk_reps[i]]
+        for i in range(len(topk_reps)):
+            topk_reps[i] = reps[topk_reps[i]]
+            
+        return reps, topk_reps, topk_dists

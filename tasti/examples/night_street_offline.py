@@ -155,22 +155,6 @@ class NightStreetOfflineIndex(tasti.Index):
                 return False
         return True
 
-class NightStreetOfflineConfig(tasti.IndexConfig):
-    def __init__(self):
-        super().__init__()
-        self.do_mining = True
-        self.do_training = True
-        self.do_infer = True
-        self.do_bucketting = True
-        
-        self.batch_size = 8
-        self.nb_train = 3000
-        self.train_margin = 1.0
-        self.train_lr = 1e-4
-        self.max_k = 5
-        self.nb_buckets = 7000
-        self.nb_training_its = 12000
-
 class NightStreetAggregateQuery(tasti.AggregateQuery):
     def score(self, target_dnn_output):
         return len(target_dnn_output)
@@ -241,6 +225,22 @@ class NightStreetAveragePositionAggregateQuery(tasti.AggregateQuery):
         print('Samples:', nb_samples)
         
         return {'initial_estimate': y_pred.sum(), 'debiased_estimate': estimate, 'samples': nb_samples}
+    
+class NightStreetOfflineConfig(tasti.IndexConfig):
+    def __init__(self):
+        super().__init__()
+        self.do_mining = True
+        self.do_training = True
+        self.do_infer = True
+        self.do_bucketting = True
+        
+        self.batch_size = 8
+        self.nb_train = 3000
+        self.train_margin = 1.0
+        self.train_lr = 1e-4
+        self.max_k = 5
+        self.nb_buckets = 7000
+        self.nb_training_its = 12000
     
 if __name__ == '__main__':
     config = NightStreetOfflineConfig()

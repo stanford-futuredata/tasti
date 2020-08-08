@@ -104,22 +104,22 @@ class NightStreetOnlineIndex(tasti.Index):
 class NightStreetOnlineConfig(tasti.IndexConfig):
     def __init__(self):
         super().__init__()
-        self.do_mining = False
-        self.do_training = False
-        self.do_infer = False
+        self.do_mining = True
+        self.do_training = True
+        self.do_infer = True
         self.do_bucketting = True
         
         self.batch_size = 16
-        self.nb_train = 500
+        self.nb_train = 1000
         self.train_margin = 1.0
         self.train_lr = 1e-4
         self.max_k = 5
-        self.nb_buckets = 500
+        self.nb_buckets = 1000
         self.nb_training_its = 1000
         
 if __name__ == '__main__':
-    config = NightStreetOfflineConfig()
-    index = NightStreetOfflineIndex(config)
+    config = NightStreetOnlineConfig()
+    index = NightStreetOnlineIndex(config)
     index.init()
 
     query = NightStreetAggregateQuery(index)
