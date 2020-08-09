@@ -9,22 +9,22 @@ class Index:
         self.config = config
         self.target_dnn_cache = tasti.DNNOutputCache(
             self.get_target_dnn(),
-            self.get_target_dnn_dataset(),
+            self.get_target_dnn_dataset(train_or_test='train'),
             self.target_dnn_callback
         )
-        self.target_dnn_cache = self.override_target_dnn_cache(self.target_dnn_cache)
+        self.target_dnn_cache = self.override_target_dnn_cache(self.target_dnn_cache, train_or_test='train')
         self.rand = np.random.RandomState(seed=1)
         
-    def override_target_dnn_cache(self, target_dnn_cache):
+    def override_target_dnn_cache(self, target_dnn_cache, train_or_test='train'):
         return target_dnn_cache
         
     def is_close(self, a, b):
         raise NotImplementedError
         
-    def get_target_dnn_dataset(self):
+    def get_target_dnn_dataset(self, train_or_test='train'):
         raise NotImplementedError
     
-    def get_embedding_dnn_dataset(self):
+    def get_embedding_dnn_dataset(self, train_or_test='train'):
         raise NotImplementedError
         
     def get_target_dnn(self):
@@ -42,7 +42,7 @@ class Index:
             model.eval()
             model.cuda()
             
-            dataset = self.get_embedding_dnn_dataset()
+            dataset = self.get_embedding_dnn_dataset(train_or_test='train')
             dataloader = torch.utils.data.DataLoader(
                 dataset,
                 batch_size=self.config.batch_size,
@@ -63,7 +63,7 @@ class Index:
             self.training_idxs = reps
         else:
             self.training_idxs = self.rand.choice(
-                    len(self.get_embedding_dnn_dataset()),
+                    len(self.get_embedding_dnn_dataset(train_or_test='train')),
                     size=self.config.nb_train,
                     replace=False
             )
@@ -77,7 +77,7 @@ class Index:
             for idx in tqdm(self.training_idxs, desc='Target DNN'):
                 self.target_dnn_cache[idx]
             
-            dataset = self.get_embedding_dnn_dataset()
+            dataset = self.get_embedding_dnn_dataset(train_or_test='train')
             triplet_dataset = tasti.data.TripletDataset(
                 dataset=dataset,
                 target_dnn_cache=self.target_dnn_cache,
@@ -116,12 +116,21 @@ class Index:
         else:
             self.embedding_dnn = self.get_embedding_dnn()
             
+        del self.target_dnn_cache
+        self.target_dnn_cache = tasti.DNNOutputCache(
+            self.get_target_dnn(),
+            self.get_target_dnn_dataset(train_or_test='test'),
+            self.target_dnn_callback
+        )
+        self.target_dnn_cache = self.override_target_dnn_cache(self.target_dnn_cache, train_or_test='test')
+        
+            
     def do_infer(self):
         if self.config.do_infer:
             model = self.embedding_dnn
             model.eval()
             model.cuda()
-            dataset = self.get_embedding_dnn_dataset()
+            dataset = self.get_embedding_dnn_dataset(train_or_test='test')
             dataloader = torch.utils.data.DataLoader(
                 dataset,
                 batch_size=self.config.batch_size,

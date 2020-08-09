@@ -16,6 +16,7 @@ from tasti.examples.night_street_offline import night_street_is_close_helper
 from tasti.examples.night_street_offline import night_street_embedding_dnn_transform_fn
 from tasti.examples.night_street_offline import night_street_target_dnn_transform_fn
 from tasti.examples.night_street_offline import NightStreetAggregateQuery
+from tasti.examples.night_street_offline import NightStreetLimitQuery
 from tasti.examples.night_street_offline import NightStreetSUPGPrecisionQuery
 from tasti.examples.night_street_offline import NightStreetSUPGRecallQuery
 
@@ -63,20 +64,18 @@ class NightStreetOnlineIndex(tasti.Index):
         model.fc = torch.nn.Linear(512, 128)
         return model
     
-    def get_target_dnn_dataset(self):
+    def get_target_dnn_dataset(self, train_or_test):
         video = VideoDataset(
             video_fp='/lfs/1/jtguibas/data/2017-12-17',
             transform_fn=night_street_target_dnn_transform_fn
         )
-        video.length = 10000
         return video
     
-    def get_embedding_dnn_dataset(self):
+    def get_embedding_dnn_dataset(self, train_or_test):
         video = VideoDataset(
             video_fp='/lfs/1/jtguibas/data/2017-12-17',
             transform_fn=night_street_embedding_dnn_transform_fn
         )
-        video.length = 10000
         return video
     
     def target_dnn_callback(self, target_dnn_output):
@@ -106,10 +105,10 @@ class NightStreetOnlineIndex(tasti.Index):
 class NightStreetOnlineConfig(tasti.IndexConfig):
     def __init__(self):
         super().__init__()
-        self.do_mining = True
-        self.do_training = True
-        self.do_infer = True
-        self.do_bucketting = True
+        self.do_mining = False
+        self.do_training = False
+        self.do_infer = False
+        self.do_bucketting = False
         
         self.batch_size = 16
         self.nb_train = 1000
@@ -134,13 +133,4 @@ if __name__ == '__main__':
     query.execute_metrics()
 
     query = NightStreetSUPGRecallQuery(index)
-    query.execute_metrics()
-
-    query = NightStreetLHSPrecisionQuery(index)
-    query.execute_metrics()
-
-    query = NightStreetLHSRecallQuery(index)
-    query.execute_metrics()
-
-    query = NightStreetAveragePositionAggregateQuery(index)
     query.execute_metrics()

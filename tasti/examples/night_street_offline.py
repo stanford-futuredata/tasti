@@ -123,23 +123,35 @@ class NightStreetOfflineIndex(tasti.Index):
         model.fc = torch.nn.Linear(512, 128)
         return model
     
-    def get_target_dnn_dataset(self):
+    def get_target_dnn_dataset(self, train_or_test):
+        if train_or_test == 'train':
+            video_fp = '/lfs/1/jtguibas/data/2017-12-14'
+        else:
+            video_fp = '/lfs/1/jtguibas/data/2017-12-17'
         video = VideoDataset(
-            video_fp='/lfs/1/jtguibas/data/2017-12-17',
+            video_fp=video_fp,
             transform_fn=night_street_target_dnn_transform_fn
         )
         return video
     
-    def get_embedding_dnn_dataset(self):
+    def get_embedding_dnn_dataset(self, train_or_test):
+        if train_or_test == 'train':
+            video_fp = '/lfs/1/jtguibas/data/2017-12-14'
+        else:
+            video_fp = '/lfs/1/jtguibas/data/2017-12-17'
         video = VideoDataset(
-            video_fp='/lfs/1/jtguibas/data/2017-12-17',
+            video_fp=video_fp,
             transform_fn=night_street_embedding_dnn_transform_fn
         )
         return video
     
-    def override_target_dnn_cache(self, target_dnn_cache):
+    def override_target_dnn_cache(self, target_dnn_cache, train_or_test):
+        if train_or_test == 'train':
+            labels_fp = '/lfs/1/jtguibas/data/labels/jackson-town-square-2017-12-14.csv'
+        else:
+            labels_fp = '/lfs/1/jtguibas/data/labels/jackson-town-square-2017-12-17.csv'
         labels = LabelDataset(
-            labels_fp='/lfs/1/jtguibas/data/labels/jackson-town-square-2017-12-17.csv',
+            labels_fp=labels_fp,
             length=len(target_dnn_cache)
         )
         return labels
@@ -230,10 +242,10 @@ class NightStreetAveragePositionAggregateQuery(tasti.AggregateQuery):
 class NightStreetOfflineConfig(tasti.IndexConfig):
     def __init__(self):
         super().__init__()
-        self.do_mining = False
-        self.do_training = False
-        self.do_infer = False
-        self.do_bucketting = False
+        self.do_mining = True
+        self.do_training = True
+        self.do_infer = True
+        self.do_bucketting = True
         
         self.batch_size = 8
         self.nb_train = 3000

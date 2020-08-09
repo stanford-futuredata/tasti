@@ -130,7 +130,6 @@ class SUPGPrecisionQuery(BaseQuery):
             self.index.target_dnn_cache,
             self.index.reps, self.index.topk_reps, self.index.topk_dists
         )
-        
         source = datasource.RealtimeDataSource(y_pred, y_true)
         sampler = ImportanceSampler()
         query = ApproxQuery(
