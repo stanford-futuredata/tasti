@@ -1,3 +1,9 @@
+'''
+This code allows you to reproduce the results in the paper corresponding to the "night-street" dataset.
+The term 'offline' refers to the fact that all the target dnn outputs have already been computed.
+If you like to run the 'online' version (target dnn runs in realtime), take a look at "night_street_online.py". 
+Look at the README.md file for information about how to get the data to run this code.
+'''
 import cv2
 import swag
 import json
@@ -12,6 +18,9 @@ from collections import defaultdict
 from tqdm.autonotebook import tqdm
 from blazeit.aggregation.samplers import ControlCovariateSampler
 
+'''
+VideoDataset allows you to access frames of a given video.
+'''
 class VideoDataset(torch.utils.data.Dataset):
     def __init__(self, video_fp, list_of_idxs=[], transform_fn=lambda x: x):
         self.video_fp = video_fp
@@ -62,6 +71,9 @@ class VideoDataset(torch.utils.data.Dataset):
             frame = self.frames[idx]
         return frame   
 
+'''
+LabelDataset loads the target dnn .csv files and allows you to access the target dnn outputs of given frames.
+'''
 class LabelDataset(torch.utils.data.Dataset):
     def __init__(self, labels_fp, length):
         df = pd.read_csv(labels_fp)
@@ -79,7 +91,10 @@ class LabelDataset(torch.utils.data.Dataset):
     
     def __getitem__(self, idx):
         return self.labels[idx]
-        
+
+'''
+Preprocessing function of a frame before it is passed to the Embedding DNN.
+'''
 def night_street_embedding_dnn_transform_fn(frame):
     xmin, xmax, ymin, ymax = 0, 1750, 540, 1080
     frame = frame[ymin:ymax, xmin:xmax]
@@ -93,6 +108,9 @@ def night_street_target_dnn_transform_fn(frame):
     frame = torchvision.transforms.functional.to_tensor(frame)
     return frame
 
+'''
+Defines our notion of 'closeness' as described in the paper for two labels for only one object type.
+'''
 def night_street_is_close_helper(label1, label2):
     if len(label1) != len(label2):
         return False
@@ -115,12 +133,23 @@ def night_street_is_close_helper(label1, label2):
         
 class NightStreetOfflineIndex(tasti.Index):
     def get_target_dnn(self):
+        '''
+        In this case, because we are running the target dnn offline, so we just return the identity.
+        '''
         model = torch.nn.Identity()
         return model
         
     def get_embedding_dnn(self):
         model = torchvision.models.resnet18(pretrained=True, progress=True)
         model.fc = torch.nn.Linear(512, 128)
+        return model
+    
+    def get_pretrained_embedding_dnn(self):
+        '''
+        Note that the pretrained embedding dnn sometime differs from the embedding dnn.
+        '''
+        model = torchvision.models.resnet18(pretrained=True, progress=True)
+        model.fc = torch.nn.Identity()
         return model
     
     def get_target_dnn_dataset(self, train_or_test):
@@ -218,27 +247,6 @@ class NightStreetAveragePositionAggregateQuery(tasti.AggregateQuery):
             return avg / len(boxes)
         return proc_boxes(target_dnn_output)
     
-    def _execute(self):
-        y_pred, y_true = self.propagate(
-            self.index.target_dnn_cache,
-            self.index.reps, self.index.topk_reps, self.index.topk_dists
-        )
-        
-        err_tol = 0.01 / 2
-        confidence = 0.05
-        r = np.amax(np.rint(y_pred)) + 1
-        sampler = ControlCovariateSampler(err_tol, confidence, y_pred, y_true, r)
-        estimate, nb_samples = sampler.sample()
-        
-        res = {
-            'initial_estimate': y_pred.sum(),
-            'debiased_estimate': estimate,
-            'nb_samples': nb_samples,
-            'y_pred': y_pred,
-            'y_true': y_true
-        }
-        return res
-    
 class NightStreetOfflineConfig(tasti.IndexConfig):
     def __init__(self):
         super().__init__()
@@ -247,7 +255,7 @@ class NightStreetOfflineConfig(tasti.IndexConfig):
         self.do_infer = True
         self.do_bucketting = True
         
-        self.batch_size = 8
+        self.batch_size = 16
         self.nb_train = 3000
         self.train_margin = 1.0
         self.train_lr = 1e-4
@@ -261,23 +269,23 @@ if __name__ == '__main__':
     index.init()
 
     query = NightStreetAggregateQuery(index)
-    query.execute_metrics()
+    query.execute_metrics(err_tol=0.01, confidence=0.05)
 
     query = NightStreetLimitQuery(index)
-    query.execute_metrics(5)
+    query.execute_metrics(want_to_find=5, nb_to_find=10)
 
     query = NightStreetSUPGPrecisionQuery(index)
-    query.execute_metrics()
+    query.execute_metrics(10000)
 
     query = NightStreetSUPGRecallQuery(index)
-    query.execute_metrics()
+    query.execute_metrics(10000)
 
     query = NightStreetLHSPrecisionQuery(index)
-    query.execute_metrics()
+    query.execute_metrics(10000)
 
     query = NightStreetLHSRecallQuery(index)
-    query.execute_metrics()
+    query.execute_metrics(10000)
 
     query = NightStreetAveragePositionAggregateQuery(index)
-    query.execute_metrics()
+    query.execute_metrics(err_tol=0.005, confidence=0.05)
     

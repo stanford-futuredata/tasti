@@ -22,7 +22,7 @@ class Bucketter(object):
     def __init__(
             self,
             nb_buckets: int,
-            seed: int=1
+            seed: int=123456
     ):
         self.nb_buckets = nb_buckets
         self.rand = np.random.RandomState(seed)

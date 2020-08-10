@@ -1,3 +1,8 @@
+'''
+This code allows you to reproduce the results in the paper corresponding to the "WikiSQL" dataset.
+The term 'offline' refers to the fact that all the target dnn outputs have already been computed.
+Look at the README.md file for information about how to get the data to run this code.
+'''
 import tasti
 import jsonlines
 import numpy as np
@@ -16,7 +21,7 @@ class WikiSQLDataset(torch.utils.data.Dataset):
                 sql = obj['sql']
                 label = (sql['agg'], len(sql['conds']))
                 text = obj['question'].strip().lower()
-                text = text.replace('?', '') # TODO: ??
+                text = text.replace('?', '')
                 data.append((text, sql['agg'], len(sql['conds'])))
         self.df = pd.DataFrame(data, columns=['text', 'agg', 'conds'])
         self.vectors = FastText(cache='./cache/vectors.pth')
@@ -57,22 +62,26 @@ class WikiSQLOfflineIndex(tasti.Index):
     def get_target_dnn(self):
         model = torch.nn.Identity()
         return model
+    
+    def get_pretrained_embedding_dnn(self):
+        model = torch.nn.Identity()
+        return model
         
     def get_embedding_dnn(self):
         model = Embedder()
         return model
     
-    def get_target_dnn_dataset(self):
+    def get_target_dnn_dataset(self, train_or_test):
         sql_dataset = WikiSQLDataset('/lfs/1/jtguibas/text/data/train.jsonl')
         sql_dataset.mode = 'input'
         return sql_dataset
     
-    def get_embedding_dnn_dataset(self):
+    def get_embedding_dnn_dataset(self, train_or_test):
         sql_dataset = WikiSQLDataset('/lfs/1/jtguibas/text/data/train.jsonl')
         sql_dataset.mode = 'input'
         return sql_dataset
     
-    def override_target_dnn_cache(self, target_dnn_cache):
+    def override_target_dnn_cache(self, target_dnn_cache, train_or_test):
         sql_dataset = WikiSQLDataset('/lfs/1/jtguibas/text/data/train.jsonl')
         sql_dataset.mode = 'output'
         return sql_dataset
@@ -88,6 +97,14 @@ class WikiSQLSUPGPrecisionQuery(tasti.SUPGPrecisionQuery):
     def score(self, target_dnn_output):
         return 1.0 if target_dnn_output[0] == 0 else 0.0
     
+class WikiSQLSUPGRecallQuery(tasti.SUPGRecallQuery):
+    def score(self, target_dnn_output):
+        return 1.0 if target_dnn_output[0] == 0 else 0.0
+
+class WikiSQLLimitQuery(tasti.LimitQuery):
+    def score(self, target_dnn_output):
+        return target_dnn_output[1] if target_dnn_output[0] == 0 else 0
+    
 class WikiSQLOfflineConfig(tasti.IndexConfig):
     def __init__(self):
         super().__init__()
@@ -95,7 +112,7 @@ class WikiSQLOfflineConfig(tasti.IndexConfig):
         self.do_training = True
         self.do_infer = True
         self.do_bucketting = True
-        self.nb_train = 500
+        self.nb_train = 3000
         self.nb_buckets = 500
         self.batch_size = 1
         
@@ -105,9 +122,13 @@ if __name__ == '__main__':
     index.init()
     
     query = WikiSQLAggregateQuery(index)
-    result = query.execute()
+    result = query.execute_metrics(err_tol=0.01, confidence=0.05)
+    print(result)
+
+    query = WikiSQLLimitQuery(index)
+    result = query.execute_metrics(want_to_find=4, nb_to_find=10)
     print(result)
     
-    query = WikiSQLSUPGPrecisionQuery(index)
-    result = query.execute()
+    query = WikiSQLSUPGRecallQuery(index)
+    result = query.execute_metrics(budget=1000)
     print(result)

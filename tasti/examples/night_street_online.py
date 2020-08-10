@@ -1,3 +1,8 @@
+'''
+This code allows you to create a TASTI for "night-street" using a target dnn run in realtime ("online").
+Note that for performance reasons, we have reduced the intensity of the hyperparameters and are using a 
+much smaller model. Look at the README.md file for information about how to get the data to run this code.
+'''
 import os
 import cv2
 import swag
@@ -19,6 +24,9 @@ from tasti.examples.night_street_offline import NightStreetAggregateQuery
 from tasti.examples.night_street_offline import NightStreetLimitQuery
 from tasti.examples.night_street_offline import NightStreetSUPGPrecisionQuery
 from tasti.examples.night_street_offline import NightStreetSUPGRecallQuery
+from tasti.examples.night_street_offline import NightStreetLHSPrecisionQuery
+from tasti.examples.night_street_offline import NightStreetLHSRecallQuery
+from tasti.examples.night_street_offline import NightStreetAveragePositionAggregateQuery
 
 os.environ['TORCH_HOME'] = '/lfs/1/jtguibas/models'
 os.environ['FVCORE_CACHE'] = '/lfs/1/jtguibas/models'
@@ -64,16 +72,29 @@ class NightStreetOnlineIndex(tasti.Index):
         model.fc = torch.nn.Linear(512, 128)
         return model
     
+    def get_pretrained_embedding_dnn(self):
+        model = torchvision.models.resnet18(pretrained=True, progress=True)
+        model.fc = torch.nn.Identity()
+        return model
+    
     def get_target_dnn_dataset(self, train_or_test):
+        if train_or_test == 'train':
+            video_fp = '/lfs/1/jtguibas/data/2017-12-14'
+        else:
+            video_fp = '/lfs/1/jtguibas/data/2017-12-17'
         video = VideoDataset(
-            video_fp='/lfs/1/jtguibas/data/2017-12-17',
+            video_fp=video_fp,
             transform_fn=night_street_target_dnn_transform_fn
         )
         return video
     
     def get_embedding_dnn_dataset(self, train_or_test):
+        if train_or_test == 'train':
+            video_fp = '/lfs/1/jtguibas/data/2017-12-14'
+        else:
+            video_fp = '/lfs/1/jtguibas/data/2017-12-17'
         video = VideoDataset(
-            video_fp='/lfs/1/jtguibas/data/2017-12-17',
+            video_fp=video_fp,
             transform_fn=night_street_embedding_dnn_transform_fn
         )
         return video
@@ -85,7 +106,7 @@ class NightStreetOnlineIndex(tasti.Index):
         label = []
         for i in range(len(boxes)):
             object_name = COCO_INSTANCE_CATEGORY_NAMES[object_ids[i]]
-            if confidences[i] > 0.95 and object_name in ['car']:
+            if confidences[i] > 0.97 and object_name in ['car']:
                 box = Box(boxes[i], object_ids[i], confidences[i])
                 label.append(box)
         return label
@@ -105,10 +126,10 @@ class NightStreetOnlineIndex(tasti.Index):
 class NightStreetOnlineConfig(tasti.IndexConfig):
     def __init__(self):
         super().__init__()
-        self.do_mining = False
-        self.do_training = False
-        self.do_infer = False
-        self.do_bucketting = False
+        self.do_mining = True
+        self.do_training = True
+        self.do_infer = True
+        self.do_bucketting = True
         
         self.batch_size = 16
         self.nb_train = 1000
@@ -124,13 +145,22 @@ if __name__ == '__main__':
     index.init()
 
     query = NightStreetAggregateQuery(index)
-    query.execute_metrics()
+    query.execute(err_tol=0.1, confidence=0.1)
 
     query = NightStreetLimitQuery(index)
-    query.execute_metrics(5)
+    query.execute(want_to_find=4, nb_to_find=3)
 
     query = NightStreetSUPGPrecisionQuery(index)
-    query.execute_metrics()
+    query.execute(budget=100)
 
     query = NightStreetSUPGRecallQuery(index)
-    query.execute_metrics()
+    query.execute(budget=100)
+
+    query = NightStreetLHSPrecisionQuery(index)
+    query.execute(budget=100)
+
+    query = NightStreetLHSRecallQuery(index)
+    query.execute(budget=100)
+
+    query = NightStreetAveragePositionAggregateQuery(index)
+    query.execute(err_tol=0.1, confidence=0.1)
