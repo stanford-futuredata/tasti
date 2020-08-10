@@ -23,32 +23,31 @@ Hardware requirements will vary depending on the dataset and hyperparameters.
 We provide code for creating a TASTI for the `night-street` video dataset along with several queries mentioned in the paper (aggregation, limit, SUPG, etc). You can download the `night-street` video dataset [here](https://drive.google.com/drive/folders/1phQuGu4oWwbArurprqruMztTdP1Fzz2F?usp=sharing). Download the `2017-12-14.zip` and `2017-12-17.zip` files. Unzip the files and place the video data in `/lfs/1/jtguibas/data` (feel free to change this path in night_street_offline.py). For speed purposes, the target dnn will not run in realtime and we have instead provided the outputs [here](https://drive.google.com/drive/folders/1phQuGu4oWwbArurprqruMztTdP1Fzz2F?usp=sharing). Place the csv files in `/lfs/1/jtguibas/data`. Then, you can reproduce the experiments by running:
 
 ```python
-# night_street_offline.py
-import tasti
-config = tasti.examples.NightStreetOfflineConfig()
-index = tasti.examples.NightStreetOfflineIndex(config)
+# tasti/examples/night_street_offline.py
+config = NightStreetOfflineConfig()
+index = NightStreetOfflineIndex(config)
 index.init()
 
-query = tasti.examples.NightStreetAggregateQuery(index)
-query.execute_metrics()
+query = NightStreetAggregateQuery(index)
+query.execute_metrics(err_tol=0.01, confidence=0.05)
 
-query = tasti.examples.NightStreetLimitQuery(index)
-query.execute_metrics(5)
+query = NightStreetLimitQuery(index)
+query.execute_metrics(want_to_find=5, nb_to_find=10)
 
-query = tasti.examples.NightStreetSUPGPrecisionQuery(index)
-query.execute_metrics()
+query = NightStreetSUPGPrecisionQuery(index)
+query.execute_metrics(10000)
 
-query = tasti.examples.NightStreetSUPGRecallQuery(index)
-query.execute_metrics()
+query = NightStreetSUPGRecallQuery(index)
+query.execute_metrics(10000)
 
-query = tasti.examples.NightStreetLHSPrecisionQuery(index)
-query.execute_metrics()
+query = NightStreetLHSPrecisionQuery(index)
+query.execute_metrics(10000)
 
-query = tasti.examples.NightStreetLHSRecallQuery(index)
-query.execute_metrics()
+query = NightStreetLHSRecallQuery(index)
+query.execute_metrics(10000)
 
-query = tasti.examples.NightStreetAveragePositionAggregateQuery(index)
-query.execute_metrics()
+query = NightStreetAveragePositionAggregateQuery(index)
+query.execute_metrics(err_tol=0.005, confidence=0.05)
 ```
 
 We also provide an online version of the code that allows you to run the target dnn in realtime. For efficiency purposes, we use [Mask R-CNN ResNet-50 FPN](https://pytorch.org/docs/stable/torchvision/models.html#object-detection-instance-segmentation-and-person-keypoint-detection) as the target dnn. However, the actual model used in the paper is the Mask R-CNN X 152 model available in [detectron2](https://github.com/facebookresearch/detectron2). We encourage you to replace the inference with TensorRT or another optimized model serving system for more serious needs.
@@ -93,12 +92,22 @@ class MyIndex(tasti.Index):
         '''
         raise NotImplementedError
         
-    def target_dnn_callback(self, target_dnn_output):
+    def get_pretrained_embedding_dnn(self):
+        '''
+        Optional if do_mining is False.
+        return a torch.nn.Module object
+        '''
         raise NotImplementedError
+        
+    def target_dnn_callback(self, target_dnn_output):
+        '''
+        Optional if you don't want to process the target_dnn_output.
+        '''
+        return target_dnn_output
         
     def override_target_dnn_cache(self, target_dnn_cache, train_or_test='train'):
         '''
-        Optional:
+        Optional if you want to run the target dnn in realtime.
         Allows for you to override the target_dnn_cache when you have the
         target dnn outputs already cached
         '''
