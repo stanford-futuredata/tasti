@@ -24,7 +24,6 @@ We provide code for creating a TASTI for the `night-street` video dataset along 
 
 ```python
 # night_street_offline.py
-
 import tasti
 config = tasti.examples.NightStreetOfflineConfig()
 index = tasti.examples.NightStreetOfflineIndex(config)
@@ -52,7 +51,7 @@ query = tasti.examples.NightStreetAveragePositionAggregateQuery(index)
 query.execute_metrics()
 ```
 
-We also provide an online version of the code that allows you to run the target dnn in realtime. For efficieny purposes, we use [Mask R-CNN ResNet-50 FPN](https://pytorch.org/docs/stable/torchvision/models.html#object-detection-instance-segmentation-and-person-keypoint-detection) as the target dnn. However, the actual model used in the paper is the Mask R-CNN X 152 model available in [detectron2](https://github.com/facebookresearch/detectron2). We encourage you to replace the inference with TensorRT or another optimized model serving system for more serious needs.
+We also provide an online version of the code that allows you to run the target dnn in realtime. For efficiency purposes, we use [Mask R-CNN ResNet-50 FPN](https://pytorch.org/docs/stable/torchvision/models.html#object-detection-instance-segmentation-and-person-keypoint-detection) as the target dnn. However, the actual model used in the paper is the Mask R-CNN X 152 model available in [detectron2](https://github.com/facebookresearch/detectron2). We encourage you to replace the inference with TensorRT or another optimized model serving system for more serious needs.
 
 To run the WikiSQL example, download the data [here](https://github.com/salesforce/WikiSQL). 
 
