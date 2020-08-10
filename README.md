@@ -10,6 +10,7 @@ Install the requitements with `pip install -r requirements.txt`. You will also n
 - [SWAG](https://github.com/stanford-futuredata/swag-python)
 - [BlazeIt](https://github.com/stanford-futuredata/blazeit)
 - [SUPG](https://github.com/stanford-futuredata/supg)
+- Finally, install the tasti package with `pip install -e .` as well.
 
 To reproduce the experiments regarding the video `night-street` your machine will need:
 - 300+GB of memory
