@@ -21,7 +21,7 @@ Hardware requirements will vary depending on the dataset and hyperparameters.
 
 # Reproducing Experiments
 
-We provide code for creating a TASTI for the `night-street` video dataset along with several queries mentioned in the paper (aggregation, limit, SUPG, etc). You can download the `night-street` video dataset [here](https://drive.google.com/drive/folders/1phQuGu4oWwbArurprqruMztTdP1Fzz2F?usp=sharing). Download the `2017-12-14.zip` and `2017-12-17.zip` files. Unzip the files and place the video data in `/lfs/1/jtguibas/data` (feel free to change this path in night_street_offline.py). For speed purposes, the target dnn will not run in realtime and we have instead provided the outputs [here](https://drive.google.com/drive/folders/1phQuGu4oWwbArurprqruMztTdP1Fzz2F?usp=sharing). Place the csv files in `/lfs/1/jtguibas/data`. Then, you can reproduce the experiments by running:
+We provide code for creating a TASTI for the `night-street` video dataset along with several queries mentioned in the paper (aggregation, limit, SUPG, etc). You can download the `night-street` video dataset [here](https://drive.google.com/drive/folders/1phQuGu4oWwbArurprqruMztTdP1Fzz2F?usp=sharing). Download the `2017-12-14.zip` and `2017-12-17.zip` files. Unzip the files and place the video data in `/lfs/1/jtguibas/data` (feel free to change this path in night_street_offline.py). For speed purposes, the target dnn will not run in realtime and we have instead provided the outputs [here](https://drive.google.com/drive/folders/1XKZmBb0AvCBJX11bJGdoxdgMozoiSuWf?usp=sharing). Place the csv files in `/lfs/1/jtguibas/data`. Then, you can reproduce the experiments by running:
 
 ```python
 # tasti/examples/night_street_offline.py
