@@ -133,8 +133,8 @@ print(result)
 These are the options available in `tasti.IndexConfig` which get passed into the `tasti.Index` object.
 - `do_mining`, Boolean that determines whether the mining step is skipped or not
 - `do_training`, Boolean that determines whether the training/fine-tuning step of the embedding dnn is skipped or not
-- `do_infer`, Boolean that allows you to either compute embeddings on the spot or load them from `cache/embeddings.npy`
-- `do_bucketting`, Boolean that allows you to compute the buckets or load them from `cache`.
+- `do_infer`, Boolean that allows you to either compute embeddings or load them from `./cache`
+- `do_bucketting`, Boolean that allows you to compute the buckets or load them from `./cache`.
 - `batch_size`, general batch size for both the target and embedding dnn
 - `train_margin`, controls the margin parameter of the triplet loss
 - `max_k`, controls the k parameter described in the paper (for computing distance weighted means and votes)
