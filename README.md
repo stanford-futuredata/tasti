@@ -53,7 +53,7 @@ query.execute_metrics(err_tol=0.005, confidence=0.05)
 
 We also provide an online version of the code that allows you to run the target dnn in realtime. For efficiency purposes, we use [Mask R-CNN ResNet-50 FPN](https://pytorch.org/docs/stable/torchvision/models.html#object-detection-instance-segmentation-and-person-keypoint-detection) as the target dnn. However, the actual model used in the paper is the Mask R-CNN X 152 model available in [detectron2](https://github.com/facebookresearch/detectron2). We encourage you to replace the inference with TensorRT or another optimized model serving system for more serious needs.
 
-To run the WikiSQL example, download the data [here](https://github.com/salesforce/WikiSQL). 
+To run the WikiSQL example, download the data [here](https://github.com/salesforce/WikiSQL) and place `train.jsonl` in `/lfs/1/jtguibas/data` (again, feel free to change this inside `wikisql_offline.py`).
 
 # Customizing TASTI
 
@@ -68,44 +68,44 @@ class MyIndex(tasti.Index):
         return a Boolean of whether records a and b are 'close'
         '''
         raise NotImplementedError
-        
+
     def get_target_dnn_dataset(self, train_or_test='train'):
         '''
         return a torch.utils.data.Dataset object
         '''
         raise NotImplementedError
-    
-    def get_embedding_dnn_dataset(self, train_or_test='train'): 
+
+    def get_embedding_dnn_dataset(self, train_or_test='train'):
         '''
         return a torch.utils.data.Dataset object
         '''
         raise NotImplementedError
-        
+
     def get_target_dnn(self):
         '''
         return a torch.nn.Module object
         '''
         raise NotImplementedError
-        
+
     def get_embedding_dnn(self):
         '''
         return a torch.nn.Module object
         '''
         raise NotImplementedError
-        
+
     def get_pretrained_embedding_dnn(self):
         '''
         Optional if do_mining is False.
         return a torch.nn.Module object
         '''
         raise NotImplementedError
-        
+
     def target_dnn_callback(self, target_dnn_output):
         '''
         Optional if you don't want to process the target_dnn_output.
         '''
         return target_dnn_output
-        
+
     def override_target_dnn_cache(self, target_dnn_cache, train_or_test='train'):
         '''
         Optional if you want to run the target dnn in realtime.
@@ -113,11 +113,11 @@ class MyIndex(tasti.Index):
         target dnn outputs already cached
         '''
         raise NotImplementedError
-        
+
 class MyQuery(tasti.AggregateQuery):
     def score(self, target_dnn_output):
         return len(target_dnn_output)
-        
+
 config = tasti.IndexConfig()
 config.nb_buckets = 500
 
