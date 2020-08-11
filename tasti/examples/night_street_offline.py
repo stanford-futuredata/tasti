@@ -4,6 +4,7 @@ The term 'offline' refers to the fact that all the target dnn outputs have alrea
 If you like to run the 'online' version (target dnn runs in realtime), take a look at "night_street_online.py". 
 Look at the README.md file for information about how to get the data to run this code.
 '''
+import os
 import cv2
 import swag
 import json
@@ -17,6 +18,9 @@ import torchvision.transforms as transforms
 from collections import defaultdict
 from tqdm.autonotebook import tqdm
 from blazeit.aggregation.samplers import ControlCovariateSampler
+
+# Feel free to change this!
+ROOT_DATA_DIR = '/lfs/1/jtguibas/data'
 
 '''
 VideoDataset allows you to access frames of a given video.
@@ -154,9 +158,9 @@ class NightStreetOfflineIndex(tasti.Index):
     
     def get_target_dnn_dataset(self, train_or_test):
         if train_or_test == 'train':
-            video_fp = '/lfs/1/jtguibas/data/2017-12-14'
+            video_fp = os.path.join(ROOT_DATA_DIR, '2017-12-14')
         else:
-            video_fp = '/lfs/1/jtguibas/data/2017-12-17'
+            video_fp = os.path.join(ROOT_DATA_DIR, '2017-12-17')
         video = VideoDataset(
             video_fp=video_fp,
             transform_fn=night_street_target_dnn_transform_fn
@@ -165,9 +169,9 @@ class NightStreetOfflineIndex(tasti.Index):
     
     def get_embedding_dnn_dataset(self, train_or_test):
         if train_or_test == 'train':
-            video_fp = '/lfs/1/jtguibas/data/2017-12-14'
+            video_fp = os.path.join(ROOT_DATA_DIR, '2017-12-14')
         else:
-            video_fp = '/lfs/1/jtguibas/data/2017-12-17'
+            video_fp = os.path.join(ROOT_DATA_DIR, '2017-12-17')
         video = VideoDataset(
             video_fp=video_fp,
             transform_fn=night_street_embedding_dnn_transform_fn
@@ -176,9 +180,9 @@ class NightStreetOfflineIndex(tasti.Index):
     
     def override_target_dnn_cache(self, target_dnn_cache, train_or_test):
         if train_or_test == 'train':
-            labels_fp = '/lfs/1/jtguibas/data/labels/jackson-town-square-2017-12-14.csv'
+            labels_fp = os.path.join(ROOT_DATA_DIR, 'jackson-town-square-2017-12-14.csv')
         else:
-            labels_fp = '/lfs/1/jtguibas/data/labels/jackson-town-square-2017-12-17.csv'
+            labels_fp = os.path.join(ROOT_DATA_DIR, 'jackson-town-square-2017-12-17.csv')
         labels = LabelDataset(
             labels_fp=labels_fp,
             length=len(target_dnn_cache)

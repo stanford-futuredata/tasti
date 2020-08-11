@@ -28,8 +28,11 @@ from tasti.examples.night_street_offline import NightStreetLHSPrecisionQuery
 from tasti.examples.night_street_offline import NightStreetLHSRecallQuery
 from tasti.examples.night_street_offline import NightStreetAveragePositionAggregateQuery
 
-os.environ['TORCH_HOME'] = '/lfs/1/jtguibas/models'
-os.environ['FVCORE_CACHE'] = '/lfs/1/jtguibas/models'
+# Feel free to change this!
+ROOT_DATA_DIR = '/lfs/1/jtguibas/data'
+
+# os.environ['TORCH_HOME'] = '/lfs/1/jtguibas/models'
+# os.environ['FVCORE_CACHE'] = '/lfs/1/jtguibas/models'
 
 COCO_INSTANCE_CATEGORY_NAMES = [
     '__background__', 'person', 'bicycle', 'car', 'motorcycle', 'airplane', 'bus',
@@ -79,9 +82,9 @@ class NightStreetOnlineIndex(tasti.Index):
     
     def get_target_dnn_dataset(self, train_or_test):
         if train_or_test == 'train':
-            video_fp = '/lfs/1/jtguibas/data/2017-12-14'
+            video_fp = os.path.join(ROOT_DATA_DIR, '2017-12-14')
         else:
-            video_fp = '/lfs/1/jtguibas/data/2017-12-17'
+            video_fp = os.path.join(ROOT_DATA_DIR, '2017-12-17')
         video = VideoDataset(
             video_fp=video_fp,
             transform_fn=night_street_target_dnn_transform_fn
@@ -90,9 +93,9 @@ class NightStreetOnlineIndex(tasti.Index):
     
     def get_embedding_dnn_dataset(self, train_or_test):
         if train_or_test == 'train':
-            video_fp = '/lfs/1/jtguibas/data/2017-12-14'
+            video_fp = os.path.join(ROOT_DATA_DIR, '2017-12-14')
         else:
-            video_fp = '/lfs/1/jtguibas/data/2017-12-17'
+            video_fp = os.path.join(ROOT_DATA_DIR, '2017-12-17')
         video = VideoDataset(
             video_fp=video_fp,
             transform_fn=night_street_embedding_dnn_transform_fn

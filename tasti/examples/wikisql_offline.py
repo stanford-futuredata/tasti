@@ -3,6 +3,7 @@ This code allows you to reproduce the results in the paper corresponding to the 
 The term 'offline' refers to the fact that all the target dnn outputs have already been computed.
 Look at the README.md file for information about how to get the data to run this code.
 '''
+import os
 import tasti
 import jsonlines
 import numpy as np
@@ -11,6 +12,9 @@ import torch
 import torch.nn as nn
 from collections import defaultdict
 from torchnlp.word_to_vector import FastText
+
+# Feel free to change this!
+ROOT_DATA_DIR = '/lfs/1/jtguibas/data'
 
 class WikiSQLDataset(torch.utils.data.Dataset):
     def __init__(self, jsonl):
@@ -72,17 +76,20 @@ class WikiSQLOfflineIndex(tasti.Index):
         return model
     
     def get_target_dnn_dataset(self, train_or_test):
-        sql_dataset = WikiSQLDataset('/lfs/1/jtguibas/text/data/train.jsonl')
+        dataset_fp = os.path.join(ROOT_DATA_DIR, 'train.jsonl')
+        sql_dataset = WikiSQLDataset(dataset_fp)
         sql_dataset.mode = 'input'
         return sql_dataset
     
     def get_embedding_dnn_dataset(self, train_or_test):
-        sql_dataset = WikiSQLDataset('/lfs/1/jtguibas/text/data/train.jsonl')
+        dataset_fp = os.path.join(ROOT_DATA_DIR, 'train.jsonl')
+        sql_dataset = WikiSQLDataset(dataset_fp)
         sql_dataset.mode = 'input'
         return sql_dataset
     
     def override_target_dnn_cache(self, target_dnn_cache, train_or_test):
-        sql_dataset = WikiSQLDataset('/lfs/1/jtguibas/text/data/train.jsonl')
+        dataset_fp = os.path.join(ROOT_DATA_DIR, 'train.jsonl')
+        sql_dataset = WikiSQLDataset(dataset_fp)
         sql_dataset.mode = 'output'
         return sql_dataset
     
