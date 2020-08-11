@@ -36,16 +36,16 @@ query = NightStreetLimitQuery(index)
 query.execute_metrics(want_to_find=5, nb_to_find=10)
 
 query = NightStreetSUPGPrecisionQuery(index)
-query.execute_metrics(10000)
+query.execute_metrics(budget=10000)
 
 query = NightStreetSUPGRecallQuery(index)
-query.execute_metrics(10000)
+query.execute_metrics(budget=10000)
 
 query = NightStreetLHSPrecisionQuery(index)
-query.execute_metrics(10000)
+query.execute_metrics(budget=10000)
 
 query = NightStreetLHSRecallQuery(index)
-query.execute_metrics(10000)
+query.execute_metrics(budget=10000)
 
 query = NightStreetAveragePositionAggregateQuery(index)
 query.execute_metrics(err_tol=0.005, confidence=0.05)
