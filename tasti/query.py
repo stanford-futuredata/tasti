@@ -18,10 +18,10 @@ def print_dict(d, header='Key'):
 class BaseQuery:
     def __init__(self, index):
         self.index = index
-        
+
     def score(self, target_dnn_output):
         raise NotImplementedError
-        
+
     def propagate(self, target_dnn_cache, reps, topk_reps, topk_distances):
         score_fn = self.score
         y_true = np.array(
@@ -35,27 +35,27 @@ class BaseQuery:
             weights = weights / weights.sum()
             counts = y_true[topk_reps[i]]
             y_pred[i] =  np.sum(counts * weights)
-            
+
         return y_pred, y_true
-        
+
     def execute(self):
         raise NotImplementedError
-           
+
 class AggregateQuery(BaseQuery):
     def score(self, target_dnn_output):
         raise NotImplementedError
-        
+
     def _execute(self, err_tol=0.01, confidence=0.05):
         y_pred, y_true = self.propagate(
             self.index.target_dnn_cache,
             self.index.reps, self.index.topk_reps, self.index.topk_dists
         )
-        
+
         r = max(1, np.amax(np.rint(y_pred)))
         print("r", r)
         sampler = ControlCovariateSampler(err_tol, confidence, y_pred, y_true, r)
         estimate, nb_samples = sampler.sample()
-        
+
         res = {
             'initial_estimate': y_pred.sum(),
             'debiased_estimate': estimate,
@@ -64,22 +64,22 @@ class AggregateQuery(BaseQuery):
             'y_true': y_true
         }
         return res
-    
+
     def execute(self, err_tol=0.01, confidence=0.05):
         res = self._execute(err_tol, confidence)
         print_dict(res, header=self.__class__.__name__)
         return res
-    
+
     def execute_metrics(self, err_tol=0.01, confidence=0.05):
         res = self._execute(err_tol, confidence)
         res['actual_estimate'] = res['y_true'].sum() # expensive
         print_dict(res, header=self.__class__.__name__)
         return res
-    
+
 class LimitQuery(BaseQuery):
     def score(self, target_dnn_output):
         return len(target_dnn_output)
-    
+
     def propagate(self, target_dnn_cache, reps, topk_reps, topk_distances):
         score_fn = self.score
         y_true = np.array(
@@ -91,10 +91,10 @@ class LimitQuery(BaseQuery):
             weights = topk_distances[i]
             weights = np.sum(weights) - weights
             weights = weights / weights.sum()
-            counts = y_true[topk_reps[i][0]]
+            counts = y_true[topk_reps[i]]
             y_pred[i] =  np.sum(counts * weights)
         return y_pred, y_true
-    
+
     def execute(self, want_to_find=5, nb_to_find=10, GAP=300):
         y_pred, y_true = self.propagate(
             self.index.target_dnn_cache,
@@ -120,28 +120,28 @@ class LimitQuery(BaseQuery):
         }
         print_dict(res, header=self.__class__.__name__)
         return res
-    
+
     def execute_metrics(self, want_to_find=5, nb_to_find=10, GAP=300):
         return self.execute(want_to_find, nb_to_find, GAP)
-    
+
 class SUPGPrecisionQuery(BaseQuery):
     def score(self, target_dnn_output):
         raise NotImplementedError
-        
+
     def _execute(self, budget):
         y_pred, y_true = self.propagate(
             self.index.target_dnn_cache,
             self.index.reps, self.index.topk_reps, self.index.topk_dists
         )
-        
-        source = datasource.RealtimeDataSource(y_pred, y_true)
+
+        source = datasource.RealtimeDataSource(y_pred, y_true, use_lexsort=True)
         sampler = ImportanceSampler()
         query = ApproxQuery(
             qtype='pt',
             min_recall=0.95, min_precision=0.95, delta=0.05,
             budget=budget
         )
-        selector = ImportancePrecisionTwoStageSelector(query, source, sampler)     
+        selector = ImportancePrecisionTwoStageSelector(query, source, sampler)
         inds = selector.select()
 
         res = {
@@ -151,14 +151,14 @@ class SUPGPrecisionQuery(BaseQuery):
             'y_pred': y_pred,
             'source': source
         }
-        
+
         return res
-        
+
     def execute(self, budget):
         res = self._execute(budget)
         print_dict(res, header=self.__class__.__name__)
         return res
-    
+
     def execute_metrics(self, budget):
         res = self._execute(budget)
         source = res['source']
@@ -171,15 +171,15 @@ class SUPGPrecisionQuery(BaseQuery):
         res['recall'] = recall
         print_dict(res, header=self.__class__.__name__)
         return res
-    
+
 class SUPGRecallQuery(SUPGPrecisionQuery):
     def _execute(self, budget):
         y_pred, y_true = self.propagate(
             self.index.target_dnn_cache,
             self.index.reps, self.index.topk_reps, self.index.topk_dists
         )
-        
-        source = datasource.RealtimeDataSource(y_pred, y_true)
+
+        source = datasource.RealtimeDataSource(y_pred, y_true, use_lexsort=True)
         sampler = ImportanceSampler()
         query = ApproxQuery(
             qtype='rt',
@@ -197,12 +197,12 @@ class SUPGRecallQuery(SUPGPrecisionQuery):
             'source': source
         }
         return res
-        
+
     def execute(self, budget):
         res = self._execute(budget)
         print_dict(res, header=self.__class__.__name__)
         return res
-    
+
     def execute_metrics(self, budget):
         res = self._execute(budget)
         source = res['source']
@@ -215,4 +215,4 @@ class SUPGRecallQuery(SUPGPrecisionQuery):
         res['recall'] = recall
         print_dict(res, header=self.__class__.__name__)
         return res
-        
+
