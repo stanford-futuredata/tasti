@@ -134,7 +134,7 @@ class SUPGPrecisionQuery(BaseQuery):
             self.index.reps, self.index.topk_reps, self.index.topk_dists
         )
 
-        source = datasource.RealtimeDataSource(y_pred, y_true, use_lexsort=True)
+        source = datasource.RealtimeDataSource(y_pred, y_true)
         sampler = ImportanceSampler()
         query = ApproxQuery(
             qtype='pt',
@@ -179,7 +179,7 @@ class SUPGRecallQuery(SUPGPrecisionQuery):
             self.index.reps, self.index.topk_reps, self.index.topk_dists
         )
 
-        source = datasource.RealtimeDataSource(y_pred, y_true, use_lexsort=True)
+        source = datasource.RealtimeDataSource(y_pred, y_true)
         sampler = ImportanceSampler()
         query = ApproxQuery(
             qtype='rt',
