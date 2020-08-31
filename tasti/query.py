@@ -32,7 +32,6 @@ class BaseQuery:
         for i in tqdm(range(len(y_pred)), 'Propagation'):
             weights = topk_distances[i]
             weights = np.sum(weights) - weights
-#             weights = 1 / (topk_distances[i] + 0.00000001)
             weights = weights / weights.sum()
             counts = y_true[topk_reps[i]]
             y_pred[i] =  np.sum(counts * weights)
@@ -52,7 +51,8 @@ class AggregateQuery(BaseQuery):
             self.index.reps, self.index.topk_reps, self.index.topk_dists
         )
         
-        r = np.amax(np.rint(y_pred)) + 1
+        r = max(1, np.amax(np.rint(y_pred)))
+        print("r", r)
         sampler = ControlCovariateSampler(err_tol, confidence, y_pred, y_true, r)
         estimate, nb_samples = sampler.sample()
         
@@ -89,6 +89,7 @@ class LimitQuery(BaseQuery):
 
         for i in tqdm(range(len(y_pred)), 'Propagation'):
             weights = topk_distances[i]
+            weights = np.sum(weights) - weights
             weights = weights / weights.sum()
             counts = y_true[topk_reps[i][0]]
             y_pred[i] =  np.sum(counts * weights)

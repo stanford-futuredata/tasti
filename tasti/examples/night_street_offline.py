@@ -274,6 +274,9 @@ if __name__ == '__main__':
 
     query = NightStreetAggregateQuery(index)
     query.execute_metrics(err_tol=0.01, confidence=0.05)
+    
+    query = NightStreetAveragePositionAggregateQuery(index)
+    query.execute_metrics(err_tol=0.005, confidence=0.05)
 
     query = NightStreetLimitQuery(index)
     query.execute_metrics(want_to_find=5, nb_to_find=10)
@@ -288,8 +291,4 @@ if __name__ == '__main__':
     query.execute_metrics(10000)
 
     query = NightStreetLHSRecallQuery(index)
-    query.execute_metrics(10000)
-
-    query = NightStreetAveragePositionAggregateQuery(index)
-    query.execute_metrics(err_tol=0.005, confidence=0.05)
-    
+    query.execute_metrics(10000)    
