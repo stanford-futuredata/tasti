@@ -91,7 +91,7 @@ class LimitQuery(BaseQuery):
             weights = topk_distances[i]
             weights = np.sum(weights) - weights
             weights = weights / weights.sum()
-            counts = y_true[topk_reps[i][0]]
+            counts = y_true[topk_reps[i]]
             y_pred[i] =  np.sum(counts * weights)
         return y_pred, y_true
     
