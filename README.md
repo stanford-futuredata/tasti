@@ -41,38 +41,38 @@ import tasti
 class MyIndex(tasti.Index):
     def is_close(self, a, b):
         '''
-        return a Boolean of whether records a and b are 'close'
+        Return a Boolean of whether records a and b are 'close'.
         '''
         raise NotImplementedError
 
     def get_target_dnn_dataset(self, train_or_test='train'):
         '''
-        return a torch.utils.data.Dataset object
+        Return a torch.utils.data.Dataset object.
         '''
         raise NotImplementedError
 
     def get_embedding_dnn_dataset(self, train_or_test='train'):
         '''
-        return a torch.utils.data.Dataset object
+        Return a torch.utils.data.Dataset object.
         '''
         raise NotImplementedError
 
     def get_target_dnn(self):
         '''
-        return a torch.nn.Module object
+        Return a torch.nn.Module object.
         '''
         raise NotImplementedError
 
     def get_embedding_dnn(self):
         '''
-        return a torch.nn.Module object
+        Return a torch.nn.Module object.
         '''
         raise NotImplementedError
 
     def get_pretrained_embedding_dnn(self):
         '''
         Optional if do_mining is False.
-        return a torch.nn.Module object
+        Return a torch.nn.Module object.
         '''
         raise NotImplementedError
 
@@ -86,7 +86,7 @@ class MyIndex(tasti.Index):
         '''
         Optional if you want to run the target dnn in realtime.
         Allows for you to override the target_dnn_cache when you have the
-        target dnn outputs already cached
+        target dnn outputs already cached.
         '''
         raise NotImplementedError
 
@@ -109,8 +109,8 @@ print(result)
 These are the options available in `tasti.IndexConfig` which get passed into the `tasti.Index` object.
 - `do_mining`, Boolean that determines whether the mining step is skipped or not
 - `do_training`, Boolean that determines whether the training/fine-tuning step of the embedding dnn is skipped or not
-- `do_infer`, Boolean that allows you to either compute embeddings on the spot or load them from `cache/embeddings.npy`
-- `do_bucketting`, Boolean that allows you to compute the buckets or load them from `cache`.
+- `do_infer`, Boolean that allows you to either compute embeddings or load them from `./cache`
+- `do_bucketting`, Boolean that allows you to compute the buckets or load them from `./cache`
 - `batch_size`, general batch size for both the target and embedding dnn
 - `train_margin`, controls the margin parameter of the triplet loss
 - `max_k`, controls the k parameter described in the paper (for computing distance weighted means and votes)
