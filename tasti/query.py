@@ -215,8 +215,3 @@ class SUPGRecallQuery(SUPGPrecisionQuery):
         res['recall'] = recall
         print_dict(res, header=self.__class__.__name__)
         return res
-<<<<<<< HEAD
-
-=======
-        
->>>>>>> bac181cd7068b64eb075624b2e9292da547ef417
