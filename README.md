@@ -92,6 +92,10 @@ class MyIndex(tasti.Index):
 
 class MyQuery(tasti.AggregateQuery):
     def score(self, target_dnn_output):
+        '''
+        Maps a target_dnn_output into a feature/scalar you are interested in.
+        Note that this is an aggregate query, so this query will try to estimate the total sum of these scores.
+        '''
         return len(target_dnn_output)
 
 config = tasti.IndexConfig()
