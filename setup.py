@@ -6,5 +6,5 @@ setuptools.setup(
     author = 'Daniel Kang',
     author_email = 'ddkang@stanford.edu',
     packages=setuptools.find_packages(),
-    python_requires='>=3.7',
+    python_requires='>=3.6',
 )
