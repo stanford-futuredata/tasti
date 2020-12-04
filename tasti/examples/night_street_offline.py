@@ -30,11 +30,11 @@ class VideoDataset(torch.utils.data.Dataset):
         self.video_fp = video_fp
         self.list_of_idxs = []
         self.transform_fn = transform_fn
+        self.cap = swag.VideoCapture(self.video_fp)
         self.video_metadata = json.load(open(self.video_fp + '.json', 'r'))
         self.cum_frames = np.array(self.video_metadata['cum_frames'])
         self.cum_frames = np.insert(self.cum_frames, 0, 0)
         self.length = self.cum_frames[-1]
-        self.cap = swag.VideoCapture(self.video_fp)
         self.current_idx = 0
         self.init()
         
