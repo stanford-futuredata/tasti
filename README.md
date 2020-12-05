@@ -2,7 +2,7 @@
 
 This is the official project page for "Task-agnostic Indexes for Deep Learning-based Queries over Unstructured Data"
 
-Please read the [paper](https://google.com) for full technical details.
+Please read the [paper](https://arxiv.org/abs/2009.04540) for full technical details.
 
 # Requirements
 
