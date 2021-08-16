@@ -18,12 +18,13 @@ def print_dict(d, header='Key'):
 class BaseQuery:
     def __init__(self, index):
         self.index = index
+        self.df = False
 
     def score(self, target_dnn_output):
         raise NotImplementedError
 
-    def propagate(self, target_dnn_cache, reps, topk_reps, topk_distances, df=False):
-        if not df:
+    def propagate(self, target_dnn_cache, reps, topk_reps, topk_distances):
+        if not self.df:
             score_fn = self.score
             y_true = np.array(
                 [tasti.DNNOutputCacheFloat(target_dnn_cache, score_fn, idx) for idx in range(len(topk_reps))]
@@ -90,21 +91,6 @@ class AggregateQuery(BaseQuery):
 class LimitQuery(BaseQuery):
     def score(self, target_dnn_output):
         return len(target_dnn_output)
-
-    def propagate(self, target_dnn_cache, reps, topk_reps, topk_distances):
-        score_fn = self.score
-        y_true = np.array(
-            [tasti.DNNOutputCacheFloat(target_dnn_cache, score_fn, idx) for idx in range(len(topk_reps))]
-        )
-        y_pred = np.zeros(len(topk_reps))
-
-        for i in tqdm(range(len(y_pred)), 'Propagation'):
-            weights = topk_distances[i]
-            weights = np.sum(weights) - weights
-            weights = weights / weights.sum()
-            counts = y_true[topk_reps[i]]
-            y_pred[i] =  np.sum(counts * weights)
-        return y_pred, y_true
 
     def execute(self, want_to_find=5, nb_to_find=10, GAP=300, y=None):
         if y == None:
