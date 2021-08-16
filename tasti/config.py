@@ -12,3 +12,4 @@ class IndexConfig:
         self.max_k = 5
         self.nb_buckets = 7000
         self.nb_training_its = 12000
+        self.seed = 1

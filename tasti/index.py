@@ -13,7 +13,8 @@ class Index:
             self.target_dnn_callback
         )
         self.target_dnn_cache = self.override_target_dnn_cache(self.target_dnn_cache, train_or_test='train')
-        self.rand = np.random.RandomState(seed=1)
+        self.seed = self.config.seed
+        self.rand = np.random.RandomState(seed=self.seed)
         
     def override_target_dnn_cache(self, target_dnn_cache, train_or_test='train'):
         '''
@@ -80,14 +81,19 @@ class Index:
         '''
         if self.config.do_mining:
             model = self.get_pretrained_embedding_dnn()
-            model.cuda()
-            model.eval()
+            try:
+                model.cuda()
+                model.eval()
+            except:
+                pass
             
             dataset = self.get_embedding_dnn_dataset(train_or_test='train')
             dataloader = torch.utils.data.DataLoader(
                 dataset,
                 batch_size=self.config.batch_size,
                 shuffle=False,
+                num_workers=56,
+                pin_memory=True
             )
             
             embeddings = []
@@ -99,7 +105,7 @@ class Index:
             embeddings = torch.cat(embeddings, dim=0)
             embeddings = embeddings.numpy()
             
-            bucketter = tasti.bucketters.FPFRandomBucketter(self.config.nb_train)
+            bucketter = tasti.bucketters.FPFRandomBucketter(self.config.nb_train, self.seed)
             reps, _, _ = bucketter.bucket(embeddings, self.config.max_k)
             self.training_idxs = reps
         else:
@@ -133,6 +139,8 @@ class Index:
                 triplet_dataset,
                 batch_size=self.config.batch_size,
                 shuffle=True,
+                num_workers=56,
+                pin_memory=True
             )
             
             model = self.get_embedding_dnn()
@@ -158,7 +166,7 @@ class Index:
             torch.save(model.state_dict(), './cache/model.pt')
             self.embedding_dnn = model
         else:
-            self.embedding_dnn = self.get_embedding_dnn()
+            self.embedding_dnn = self.get_pretrained_embedding_dnn()
             
         del self.target_dnn_cache
         self.target_dnn_cache = tasti.DNNOutputCache(
@@ -182,6 +190,8 @@ class Index:
                 dataset,
                 batch_size=self.config.batch_size,
                 shuffle=False,
+                num_workers=56,
+                pin_memory=True
             )
 
             embeddings = []
@@ -206,7 +216,7 @@ class Index:
         Given our embeddings, cluster them and store the reps, topk_reps, and topk_dists to finalize our TASTI.
         '''
         if self.config.do_bucketting:
-            bucketter = tasti.bucketters.FPFRandomBucketter(self.config.nb_buckets)
+            bucketter = tasti.bucketters.FPFRandomBucketter(self.config.nb_buckets, self.seed)
             self.reps, self.topk_reps, self.topk_dists = bucketter.bucket(self.embeddings, self.config.max_k)
             np.save('./cache/reps.npy', self.reps)
             np.save('./cache/topk_reps.npy', self.topk_reps)
