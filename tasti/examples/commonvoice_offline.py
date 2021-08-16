@@ -1,3 +1,8 @@
+"""
+To run this file, you will need to install https://github.com/qiuqiangkong/audioset_tagging_cnn
+and download the pretrained ResNet22 and Cnn10 audio models as well as download the CommonVoice
+audio dataset https://commonvoice.mozilla.org/en/datasets.
+"""
 import os
 import sys
 import numpy as np
