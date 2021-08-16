@@ -59,6 +59,8 @@ We also provide an online version of the code that allows you to run the target 
 
 To run the WikiSQL example, download the data [here](https://github.com/salesforce/WikiSQL) and place `train.jsonl` in `/lfs/1/jtguibas/data` (again, feel free to change this path inside `wikisql_offline.py`).
 
+To run the CommonVoice example, download the data [here](https://commonvoice.mozilla.org/en/datasets) and install `audioset_tagging_cnn` from https://github.com/qiuqiangkong/audioset_tagging_cnn. After, adjust the paths in `commonvoice_offline.py` accordingly.
+
 # Customizing TASTI
 
 Our code allows for you to create your own TASTI. You will have to inherit the `tasti.Index` class and implement a few functions:
