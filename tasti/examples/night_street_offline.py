@@ -5,8 +5,6 @@ If you like to run the 'online' version (target dnn runs in realtime), take a lo
 Look at the README.md file for information about how to get the data to run this code.
 '''
 import os
-import cv2
-import swag
 import json
 import tasti
 import torch
@@ -20,13 +18,14 @@ from tqdm.autonotebook import tqdm
 from blazeit.aggregation.samplers import ControlCovariateSampler
 
 # Feel free to change this!
-ROOT_DATA_DIR = '/lfs/1/jtguibas/data'
+ROOT_DATA_DIR = '/future/u/ddkang/tasti/data/jackson'
 
 '''
 VideoDataset allows you to access frames of a given video.
 '''
 class VideoDataset(torch.utils.data.Dataset):
     def __init__(self, video_fp, list_of_idxs=[], transform_fn=lambda x: x):
+        import swag
         self.video_fp = video_fp
         self.list_of_idxs = []
         self.transform_fn = transform_fn
@@ -49,11 +48,13 @@ class VideoDataset(torch.utils.data.Dataset):
                 self.frames.append(frame)
             
     def transform(self, frame):
+        import cv2
         frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
         frame = self.transform_fn(frame)
         return frame
 
     def seek(self, idx):
+        import cv2
         if self.current_idx != idx:
             self.cap.set(cv2.CAP_PROP_POS_FRAMES, idx - 1)
             self.current_idx = idx
@@ -100,6 +101,7 @@ class LabelDataset(torch.utils.data.Dataset):
 Preprocessing function of a frame before it is passed to the Embedding DNN.
 '''
 def night_street_embedding_dnn_transform_fn(frame):
+    import cv2
     xmin, xmax, ymin, ymax = 0, 1750, 540, 1080
     frame = frame[ymin:ymax, xmin:xmax]
     frame = cv2.resize(frame, (224, 224))

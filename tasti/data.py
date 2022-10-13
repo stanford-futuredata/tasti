@@ -1,5 +1,3 @@
-import cv2
-import swag
 import json
 import torch
 import numpy as np

@@ -86,25 +86,27 @@ class Index:
                 model.eval()
             except:
                 pass
-            
+
             dataset = self.get_embedding_dnn_dataset(train_or_test='train')
             dataloader = torch.utils.data.DataLoader(
                 dataset,
                 batch_size=self.config.batch_size,
                 shuffle=False,
-                num_workers=56,
-                pin_memory=True
+                num_workers=0,
+                pin_memory=False
             )
-            
+
             embeddings = []
             for batch in tqdm(dataloader, desc='Embedding DNN'):
                 batch = batch.cuda()
                 with torch.no_grad():
                     output = model(batch).cpu()
-                embeddings.append(output)  
+                embeddings.append(output)
             embeddings = torch.cat(embeddings, dim=0)
             embeddings = embeddings.numpy()
-            
+            # np.save('./cache/12-14.npy', embeddings)
+            # raise RuntimeError
+
             bucketter = tasti.bucketters.FPFRandomBucketter(self.config.nb_train, self.seed)
             reps, _, _ = bucketter.bucket(embeddings, self.config.max_k)
             self.training_idxs = reps
@@ -139,7 +141,7 @@ class Index:
                 triplet_dataset,
                 batch_size=self.config.batch_size,
                 shuffle=True,
-                num_workers=56,
+                num_workers=0,
                 pin_memory=True
             )
             
@@ -148,7 +150,7 @@ class Index:
             model.cuda()
             loss_fn = tasti.TripletLoss(self.config.train_margin)
             optimizer = torch.optim.Adam(model.parameters(), lr=self.config.train_lr)
-            
+
             for anchor, positive, negative in tqdm(dataloader, desc='Training Step'):
                 anchor = anchor.cuda(non_blocking=True)
                 positive = positive.cuda(non_blocking=True)
@@ -190,7 +192,7 @@ class Index:
                 dataset,
                 batch_size=self.config.batch_size,
                 shuffle=False,
-                num_workers=56,
+                num_workers=0,
                 pin_memory=True
             )
 
@@ -245,6 +247,6 @@ class Index:
         self.do_training()
         self.do_infer()
         self.do_bucketting()
-        
+
         for rep in tqdm(self.reps, desc='Target DNN Invocations'):
             self.target_dnn_cache[rep]
