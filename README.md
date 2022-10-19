@@ -15,12 +15,14 @@ Install the requitements with `pip install -r requirements.txt`. You will also n
 To reproduce the experiments, your machine will need:
 - 300+GB of memory
 - 500+GB of space
-- GPU (e.g., NVIDIA V100, TITAN V)
+- GPU (e.g., NVIDIA V100, TITAN V, or later)
 
 On other datasets, hardware requirements will vary.
 
 # Installation
-Feel free to replace `conda` with your own installation method.
+If you want to reproduce the SIGMOD experiments, use Python 3.8.13 and a conda environment to install `tasti.yml`. You'll also need to install `blazeit`, `supg`, and `tasti` as described below.
+
+Otherwise, the following steps will install the necessary packages from scratch:
 ```
 git clone https://github.com/stanford-futuredata/swag-python.git
 cd swag-python/
