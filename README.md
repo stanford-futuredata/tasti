@@ -12,6 +12,8 @@ Install the requitements with `pip install -r requirements.txt`. You will also n
 - [SUPG](https://github.com/stanford-futuredata/supg)
 - Install the tasti package with `pip install -e .` as well.
 
+DO NOT use `numba==0.50.1` since there is a bug.
+
 To reproduce the experiments, your machine will need:
 - 300+GB of memory
 - 500+GB of space
